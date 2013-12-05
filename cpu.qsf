@@ -54,6 +54,8 @@ set_global_assignment -name SYSTEMVERILOG_FILE decode.sv
 set_global_assignment -name SYSTEMVERILOG_FILE read.sv
 set_global_assignment -name SYSTEMVERILOG_FILE execute.sv
 set_global_assignment -name SYSTEMVERILOG_FILE write.sv
+set_global_assignment -name QIP_FILE system/synthesis/system.qip
+set_global_assignment -name SMART_RECOMPILE ON
 
 # Pin & Location Assignments
 # ==========================
@@ -119,6 +121,7 @@ set_location_assignment PIN_F1 -to I2C_SDAT
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
 set_global_assignment -name NOMINAL_CORE_SUPPLY_VOLTAGE 1.2V
+set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
 
 # Analysis & Synthesis Assignments
 # ================================
@@ -151,15 +154,6 @@ set_global_assignment -name EDA_OUTPUT_DATA_FORMAT "SYSTEMVERILOG HDL" -section_
 
 # end EDA_TOOL_SETTINGS(eda_simulation)
 # -------------------------------------
-
-# start AUTO_INSERT_SLD_NODE_ENTITY(auto_signaltap_0)
-# ---------------------------------------------------
-
-	# SignalTap II Assignments
-	# ========================
-
-# end AUTO_INSERT_SLD_NODE_ENTITY(auto_signaltap_0)
-# -------------------------------------------------
 
 # -----------------
 # start ENTITY(cpu)
@@ -237,8 +231,5 @@ set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 
 # end ENTITY(cpu)
 # ---------------
-set_global_assignment -name QIP_FILE system/synthesis/system.qip
-set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
-set_global_assignment -name SMART_RECOMPILE ON
-set_global_assignment -name ENABLE_LOGIC_ANALYZER_INTERFACE ON
+
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
