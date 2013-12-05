@@ -11,3 +11,9 @@
 *.lai
 *.la
 *.a
+
+db
+incremental_db
+system
+*.bak
+*.lnk

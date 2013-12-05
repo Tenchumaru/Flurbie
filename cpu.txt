@@ -1,0 +1,139 @@
+20130730 - 20131031
+31      1       instruction active if CNVZ mask with CNVZ flags is non-zero
+        0       instruction active if CNVZ mask with CNVZ flags is zero
+30      C mask
+29      N mask
+28      V mask
+27      Z mask
+26-23   op code (add, addc, sub, subb, mul, umul, div, udiv, and, nand, or, nor, xor, xnor, cx, f)
+22-18   destination register (dr, 0-31)
+17      source mode
+        0       immediate source:  dr= r0 op value
+        1       register source
+
+immediate source:
+16-0    17-bit value sign-extended to 32 bits
+
+register source:
+16-12   source register 1 (sr1, 0-31)
+11      operation mode
+        0       two source registers with shift
+        1       indirect
+
+two source registers with shift:  dr= sr1 op (sr2 << adjustment)
+10-6    source register 2 (sr2, 0-31)
+5-4     shift operation
+        00      none (or perhaps add -8 to 7 or add 0 to 15)
+        01      left
+        10      logical right
+        11      arithmetic right
+3-0     4-bit adjustment (1-16)
+
+indirect:
+10      direction
+        0       dr op= *(sr1 + adjustment)
+        1       *(dr + adjustment)= r0 op sr1
+9-0     10-bit signed adjustment
+
+r31 is flags (User mode is in bit 31, CNVZ are in bits 30-27)
+r30 is IP (instruction pointer)
+r29 is SP (stack pointer; by convention)
+r28 is FP (frame pointer; by convention)
+r0 is always zero
+Supervisor mode has its own copies of r16 through r31.
+Consider having supervisor mode see user mode's r16 through r31 in its r1
+through r16 with its own copies of r17 through r31.  r0 is still 0.
+
+
+20131123
+Op Codes
+========
+
+Register Op Codes
+-----------------
+
+There are fourteen of them:
+add, addc, sub, subb, mul, umul, div, udiv, and, nand, or, nor, xor, xnor
+
+Addressing modes:
+register-register:  op dr, sr1, sr2 (with optional shift)
+register-immediate:  op dr, sr1, value
+
+Memory Op Codes
+---------------
+
+There are four of them:
+ld, ldi, ori, st
+
+Special Op Codes
+----------------
+
+There is only one so far:
+cx
+
+Patterns
+--------
+
+31      1       instruction active if CNVZ mask with CNVZ flags is non-zero
+        0       instruction active if CNVZ mask with CNVZ flags is zero
+30      C mask
+29      N mask
+28      V mask
+27      Z mask
+26-23   op code (add, addc, sub, subb, mul, umul, div, udiv, and, nand, or, nor, xor, xnor, MEM, SPECIAL)
+
+standard:
+22-18   destination register (dr, 0-31)
+17      source2 mode
+        0       immediate source2
+        1       register source2
+16-12   source register 1 (sr1, 0-31)
+
+immediate source2:  dr= sr1 op value
+11-0    12-bit value sign-extended to 32 bits
+
+register source2:  dr= sr1 op (sr2 shop value)
+11-7    source register 2 (sr2, 0-31)
+6-5     shift operation
+        00      add -16 to 15
+        01      left
+        10      logical right
+        11      arithmetic right
+4-0     5-bit value (0-31)
+
+MEM:
+22-18   register (r, 0-31)
+17-16   mop
+        00      ld
+        01      ldi
+        10      ori
+        11      store
+
+ld:  r= *(ar + value)
+15-11   address register (ar, 0-31)
+10-0    11-bit value sign-extended to 32 bits
+
+ldi:  r= value
+15-0    16-bit value sign-extended to 32 bits
+
+ori:  r= value
+15-0    16-bit unsigned value
+
+store:  *(ar + value)= r
+15-11   address register (ar, 0-31)
+10-0    11-bit value sign-extended to 32 bits
+
+SPECIAL:  dr= CX[index]; if(CX[index] == sr1) CX[index]= sr2;
+22-18   destination register (dr, 0-31)
+16-12   source register 1 (sr1, 0-31)
+11-7    source register 2 (sr2, 0-31)
+6-0     7-bit CX register index
+
+r31 is flags (User mode is in bit 31, CNVZ are in bits 30-27)
+r30 is IP (instruction pointer)
+r29 is SP (stack pointer; by convention)
+r28 is FP (frame pointer; by convention)
+r0 is always zero
+Supervisor mode has its own copies of r16 through r31.
+Consider having supervisor mode see user mode's r16 through r31 in its r1
+through r16 with its own copies of r17 through r31.  r0 is still 0.
