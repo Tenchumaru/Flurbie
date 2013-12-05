@@ -17,3 +17,4 @@ incremental_db
 system
 *.bak
 *.lnk
+assembler/*.s
