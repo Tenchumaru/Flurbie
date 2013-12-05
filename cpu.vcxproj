@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="core.sv" />
+    <None Include="cpu.qpf" />
+    <None Include="cpu.qsf" />
+    <None Include="cpu.qws" />
+    <None Include="cpu.sdc" />
+    <None Include="cpu.srf">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="cpu.stp" />
+    <None Include="cpu.sv" />
+    <None Include="cpu.txt" />
+    <None Include="decode.sv" />
+    <None Include="decode_tb.sv" />
+    <None Include="decode_tb.txt" />
+    <None Include="execute.sv" />
+    <None Include="execute_tb.sv" />
+    <None Include="execute_tb.txt" />
+    <None Include="fd_tb.sv" />
+    <None Include="fd_tb.txt" />
+    <None Include="fetch.sv" />
+    <None Include="fetch_tb.sv" />
+    <None Include="fetch_tb.txt" />
+    <None Include="Makefile" />
+    <None Include="makevecs.js" />
+    <None Include="make_tb.js" />
+    <None Include="read.sv" />
+    <None Include="read_tb.sv" />
+    <None Include="read_tb.txt" />
+    <None Include="registers.sv" />
+    <None Include="sdram_adapter.sv" />
+    <None Include="sdram_adapter_hw.tcl" />
+    <None Include="sdram_reader.sv" />
+    <None Include="sdram_reader_hw.tcl" />
+    <None Include="sdram_writer.sv" />
+    <None Include="sdram_writer_hw.tcl" />
+    <None Include="system.qsys" />
+    <None Include="write.sv" />
+    <None Include="write_tb.sv" />
+    <None Include="write_tb.txt" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{71438330-4CF7-4989-9DA7-5ED17ED70CDF}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <NMakeBuildCommandLine>nmake -nologo Configuration=$(Configuration)</NMakeBuildCommandLine>
+    <NMakeOutput>$(Configuration)\sandbox.sof</NMakeOutput>
+    <NMakeCleanCommandLine>nmake -nologo Configuration=$(Configuration) clean</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>nmake -nologo Configuration=$(Configuration)</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <ExecutablePath>C:\altera\13.1\quartus\bin64;C:\Users\Chris\Documents\bin;$(ExecutablePath)</ExecutablePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <NMakeBuildCommandLine>nmake -nologo Configuration=$(Configuration)</NMakeBuildCommandLine>
+    <NMakeOutput>$(Configuration)\sandbox.sof</NMakeOutput>
+    <NMakeCleanCommandLine>nmake -nologo Configuration=$(Configuration) clean</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>nmake -nologo Configuration=$(Configuration)</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <ExecutablePath>C:\altera\13.1\quartus\bin64;C:\Users\Chris\Documents\bin;$(ExecutablePath)</ExecutablePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
