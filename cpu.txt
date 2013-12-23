@@ -123,11 +123,12 @@ store:  *(ar + value)= r
 15-11   address register (ar, 0-31)
 10-0    11-bit value sign-extended to 32 bits
 
-SPECIAL:  dr= CX[index]; if(CX[index] == sr1) CX[index]= sr2;
+SPECIAL:  dr= *ar; if(*ar == sr1) *ar= sr2;
 22-18   destination register (dr, 0-31)
 16-12   source register 1 (sr1, 0-31)
 11-7    source register 2 (sr2, 0-31)
-6-0     7-bit CX register index
+6-2     address register
+1-0     unused
 
 r31 is flags (User mode is in bit 31, CNVZ are in bits 30-27)
 r30 is IP (instruction pointer)
@@ -136,4 +137,4 @@ r28 is FP (frame pointer; by convention)
 r0 is always zero
 Supervisor mode has its own copies of r16 through r31.
 Consider having supervisor mode see user mode's r16 through r31 in its r1
-through r16 with its own copies of r17 through r31.  r0 is still 0.
+through r16 with its own copies of r17 through r31.  r0 is still always zero.
