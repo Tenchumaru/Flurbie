@@ -68,7 +68,7 @@ ld:  r= *(ar + value)
 ldi:  r= value
 15-0    16-bit value sign-extended to 32 bits
 
-ori:  r= value
+ori:  r |= value
 15-0    16-bit unsigned value
 
 store:  *(ar + value)= r
@@ -88,5 +88,15 @@ r29 is SP (stack pointer; by convention)
 r28 is FP (frame pointer; by convention)
 r0 is always zero
 Supervisor mode has its own copies of r16 through r31.
-Consider having supervisor mode see user mode's r16 through r31 in its r1
-through r16 with its own copies of r17 through r31.  r0 is still always zero.
+Consider having supervisor mode see user mode's r17 through r31 in its r1
+through r15 with its own copies of r16 through r31.  r0 is still always zero.
+
+Operation Forms
+---------------
+immediate source2:  dr= sr1 op (R0 + value12)
+register source2:   dr= sr1 op (sr2 shop value5)
+ld:                 dr= R0 | *(ar + value11)
+ldi:                dr= R0 | (R0 + value15)
+ori:                dr= dr | (R0 + value15)
+store:              *(ar + value11)= dr | (R0 << value11)
+SPECIAL:            dr= *(ar + 0); if(dr == sr1) *(ar + 0)= (sr2 + 0);

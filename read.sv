@@ -20,26 +20,30 @@ always_ff@(posedge clock, negedge reset_n) begin
 		// TODO:  I can still fetch data from memory and hold it in a local
 		// register, thus freeing the memory bus.
 	end else if(ini.is_valid) begin
-		outi.is_valid <= !ini.right_is_memory || data_valid;
+		outi.is_valid <= !ini.is_reading_memory || data_valid;
 		outi.pc <= ini.pc;
-		outi.destination <= ini.destination;
-		outi.destination_is_memory <= ini.destination_is_memory;
+		outi.operation <= ini.operation;
+		outi.destination_register <= ini.destination_register;
 		outi.left_value <= input_registers[ini.left_register];
-		outi.right_value <= ini.right_is_memory
+		outi.right_value <= ini.is_reading_memory
 			? data
 			: input_registers[ini.right_register];
-		outi.operation <= ini.operation;
-		outi.adjustment <= ini.adjustment;
+		outi.address_register <= ini.address_register;
 		outi.adjustment_operation <= ini.adjustment_operation;
+		outi.adjustment_value <= ini.is_reading_memory && ini.is_writing_memory ?
+			input_registers[ini.right_register] :
+			ini.adjustment_value;
+		outi.is_writing_memory <= ini.is_writing_memory;
 		outi.has_flushed <= ini.has_flushed;
+		// TODO:  lock the data bus if performing a cx operation.
 	end else begin
 		outi.is_valid <= 0;
 		outi.has_flushed <= ini.has_flushed;
 	end
 end
 
+assign address_enable= reset_n && ini.is_reading_memory;
+assign address= input_registers[ini.address_register] + ini.adjustment_value;
 assign ini.hold= reset_n && (outi.hold || (address_enable && !data_valid));
-assign address_enable= reset_n && ini.right_is_memory;
-assign address= input_registers[ini.right_register] + ini.adjustment;
 
 endmodule

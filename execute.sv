@@ -8,14 +8,13 @@ module execute(
 // Declare derived signals.
 regfile_t input_registers;
 logic[3:0] flags;
-regval_t destination_value, adjustment;
+regval_t destination_value;
 
 // Assign derived signals.
 assign input_registers= subst_in(ini.pc, registers);
 assign {flags, destination_value}= compute(input_registers, ini.left_value,
-	ini.right_value, ini.destination_is_memory ? 0 : ini.adjustment,
+	ini.right_value, ini.adjustment_value,
 	ini.operation, ini.adjustment_operation);
-assign adjustment= ini.destination_is_memory ? ini.adjustment : 0;
 
 always_ff@(posedge clock, negedge reset_n) begin
 	if(!reset_n) begin
@@ -26,11 +25,21 @@ always_ff@(posedge clock, negedge reset_n) begin
 	end else if(ini.is_valid) begin
 		outi.is_valid <= 1;
 		outi.pc <= ini.pc;
-		outi.destination <= ini.destination;
-		outi.destination_is_memory <= ini.destination_is_memory;
+		if(ini.is_writing_memory) begin
+			if(ini.operation != 15 || flags[3]) begin
+				outi.destination_register <= ini.address_register;
+				outi.is_writing_memory <= 1;
+			end else begin
+				outi.destination_register <= 0;
+				outi.is_writing_memory <= 0;
+			end
+		end else begin
+			outi.destination_register <= ini.destination_register;
+			outi.is_writing_memory <= 0;
+		end
 		outi.flags <= flags;
 		outi.destination_value <= destination_value;
-		outi.adjustment <= adjustment;
+		outi.adjustment_value <= ini.operation != 15 ? ini.adjustment_value : 0;
 		outi.has_flushed <= ini.has_flushed;
 	end else begin
 		outi.is_valid <= 0;
@@ -42,27 +51,27 @@ assign ini.hold= reset_n && outi.hold;
 
 endmodule
 
-function regval_t adjust(regval_t value, logic[1:0] op, logic[3:0] adjustment);
+function regval_t adjust(regval_t value, logic[1:0] op, regval_t adjustment_value);
 	case(op)
-	None:
-		return value;
+	Add:
+		return value + adjustment_value;
 	Left:
-		return {value[30:0], 1'b0} << adjustment;
+		return value << adjustment_value[4:0];
 	LogicalRight:
-		return {1'b0, value[31:1]} >> adjustment;
+		return value >> adjustment_value[4:0];
 	ArithmeticRight:
-		return $signed({value[31], value[31:1]}) >>> adjustment;
+		return $signed(value) >>> adjustment_value[4:0];
 	endcase
 endfunction
 
-function logic[35:0] compute(regfile_t registers, regval_t left_value, right_value, adjustment, logic[3:0] operation, logic[2:0] adjustment_operation);
+function logic[35:0] compute(regfile_t registers, regval_t left_value, right_value, adjustment_value, logic[3:0] operation, logic[2:0] adjustment_operation);
 
 	regval_t adjusted_value, output_value;
 	logic has_carry, is_negative, has_overflow, is_zero;
 
 	adjusted_value= adjustment_operation[2]
-		? right_value + adjustment
-		: adjust(right_value, adjustment_operation, adjustment[3:0]);
+		? right_value + adjustment_value
+		: adjust(right_value, adjustment_operation, adjustment_value[3:0]);
 	has_carry= 0;
 	case(operation)
 		0: {has_carry, output_value}= left_value + adjusted_value;
@@ -83,8 +92,8 @@ function logic[35:0] compute(regfile_t registers, regval_t left_value, right_val
 		11: output_value= ~(left_value | adjusted_value);
 		12: output_value= left_value ^ adjusted_value;
 		13: output_value= ~(left_value ^ adjusted_value);
-		14: output_value= 0; // TODO:  compare and exchange; see below for a possible implementation.
-		15: output_value= 0; // TODO:  unknown
+		14: output_value= left_value;
+		15: begin has_carry= left_value == right_value; output_value= adjustment_value; end
 	endcase
 	is_negative= output_value[31];
 	// TODO:  overflow is incorrect for multiplication and division.
@@ -103,6 +112,11 @@ A Possible Implementation of Compare and Exchange
 
 Use a single register file that lives in the FPGA and is shared by all cores.
 This means putting this in cpu.sv, not core.sv.
+
+This works fine in a single-core implementation.  However, with multiple cores,
+I need a mechanism to prevent two cores from executing this code at exactly the
+same time.  Consider using a priority mechanism that allows core 0 to execute
+this before core 1.
 */
 
 module CX#(parameter N = 8)(input logic clock, input logic[$clog2(N)-1:0] index, input regval_t comparand, replacement, output regval_t original);

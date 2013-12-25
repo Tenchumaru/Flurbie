@@ -3,7 +3,6 @@ parameter NR= 4;
 typedef logic[4:0] regind_t;
 typedef integer unsigned regval_t;
 typedef regval_t regfile_t[NR];
-
 parameter regfile_t ZeroRegFile= '{NR{0}};
 parameter Flags= NR - 1;
 parameter PC= Flags - 1;
@@ -13,11 +12,10 @@ function regfile_t subst_in(input regval_t pc, input regfile_t registers);
 endfunction
 
 // shift operation
-parameter logic[1:0] None= 0;
+parameter logic[1:0] Add= 0;
 parameter logic[1:0] Left= 1;
 parameter logic[1:0] LogicalRight= 2;
 parameter logic[1:0] ArithmeticRight= 3;
-parameter logic[2:0] Add= 3'b100;
 
 parameter regval_t Nop= 32'h80000000;
 
@@ -40,27 +38,27 @@ endinterface
 
 interface i_decode_to_read();
 
-regval_t pc, adjustment;
-regind_t destination, left_register, right_register;
+regval_t pc, adjustment_value;
+regind_t destination_register, left_register, right_register, address_register;
 logic[3:0] operation;
 logic[2:0] adjustment_operation;
-logic hold, destination_is_memory, right_is_memory, has_flushed, is_valid;
+logic has_flushed, is_valid, is_reading_memory, is_writing_memory, hold;
 
 modport decode_out(
 	input hold,
-	output pc, adjustment,
-	output destination, left_register, right_register,
+	output pc, adjustment_value,
+	output destination_register, left_register, right_register, address_register,
 	output operation,
 	output adjustment_operation,
-	output destination_is_memory, right_is_memory, has_flushed, is_valid
+	output has_flushed, is_valid, is_reading_memory, is_writing_memory
 );
 
 modport read_in(
-	input pc, adjustment,
-	input destination, left_register, right_register,
+	input pc, adjustment_value,
+	input destination_register, left_register, right_register, address_register,
 	input operation,
 	input adjustment_operation,
-	input destination_is_memory, right_is_memory, has_flushed, is_valid,
+	input has_flushed, is_valid, is_reading_memory, is_writing_memory,
 	output hold
 );
 
@@ -68,27 +66,27 @@ endinterface
 
 interface i_read_to_execute();
 
-regval_t pc, adjustment, left_value, right_value;
-regind_t destination;
+regval_t pc, adjustment_value, left_value, right_value;
+regind_t destination_register, address_register;
 logic[3:0] operation;
 logic[2:0] adjustment_operation;
-logic hold, destination_is_memory, has_flushed, is_valid;
+logic hold, has_flushed, is_valid, is_writing_memory;
 
 modport read_out(
 	input hold,
-	output pc, adjustment, left_value, right_value,
-	output destination,
+	output pc, adjustment_value, left_value, right_value,
+	output destination_register, address_register,
 	output operation,
 	output adjustment_operation,
-	output destination_is_memory, has_flushed, is_valid
+	output has_flushed, is_valid, is_writing_memory
 );
 
 modport execute_in(
-	input pc, adjustment, left_value, right_value,
-	input destination,
+	input pc, adjustment_value, left_value, right_value,
+	input destination_register, address_register,
 	input operation,
 	input adjustment_operation,
-	input destination_is_memory, has_flushed, is_valid,
+	input has_flushed, is_valid, is_writing_memory,
 	output hold
 );
 
@@ -96,23 +94,23 @@ endinterface
 
 interface i_execute_to_write();
 
-regval_t pc, adjustment, destination_value;
-regind_t destination;
+regval_t pc, adjustment_value, destination_value;
+regind_t destination_register;
 logic[3:0] flags;
-logic hold, destination_is_memory, has_flushed, is_valid;
+logic hold, has_flushed, is_valid, is_writing_memory;
 
 modport execute_out(
 	input hold,
-	output pc, adjustment, destination_value,
-	output destination,
+	output pc, adjustment_value, destination_value,
+	output destination_register,
 	output flags,
-	output destination_is_memory, has_flushed, is_valid
+	output has_flushed, is_valid, is_writing_memory
 );
 modport write_in(
-	input pc, adjustment, destination_value,
-	input destination,
+	input pc, adjustment_value, destination_value,
+	input destination_register,
 	input flags,
-	input destination_is_memory, has_flushed, is_valid,
+	input has_flushed, is_valid, is_writing_memory,
 	output hold
 );
 
