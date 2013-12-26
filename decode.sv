@@ -57,9 +57,6 @@ always_comb begin
 	right_register= sr2;
 	address_register= raw_address_register;
 	adjustment_operation= raw_adjustment_operation;
-	// When shifting, I only use the lower five bits.
-	// TODO: adjustment_value= $signed(raw_adjustment_value);
-	adjustment_value= {{28{raw_adjustment_value[4]}}, raw_adjustment_value[3:0]};
 	case(raw_operation)
 		14: begin
 			left_register= 0;
@@ -102,7 +99,12 @@ always_comb begin
 			adjustment_operation= Add;
 			adjustment_value= 0;
 		end
-		default: if(!is_register) begin
+		default:
+			if(is_register) begin
+				// When shifting, I only use the lower five bits.
+				// TODO: adjustment_value= $signed(raw_adjustment_value);
+				adjustment_value= {{28{raw_adjustment_value[4]}}, raw_adjustment_value[3:0]};
+			end else begin
 				right_register= 0;
 				adjustment_operation= Add;
 				// TODO: adjustment_value= $signed(immediate_operand);

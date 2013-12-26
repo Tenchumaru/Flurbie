@@ -7,13 +7,13 @@ module execute(
 
 // Declare derived signals.
 regfile_t input_registers;
-logic[3:0] flags;
+logic has_carry, is_negative, has_overflow, is_zero;
 regval_t destination_value;
 
 // Assign derived signals.
 assign input_registers= subst_in(ini.pc, registers);
-assign {flags, destination_value}= compute(input_registers, ini.left_value,
-	ini.right_value, ini.adjustment_value,
+assign {has_carry, is_negative, has_overflow, is_zero, destination_value}= compute(input_registers,
+	ini.left_value, ini.right_value, ini.adjustment_value,
 	ini.operation, ini.adjustment_operation);
 
 always_ff@(posedge clock, negedge reset_n) begin
@@ -26,7 +26,7 @@ always_ff@(posedge clock, negedge reset_n) begin
 		outi.is_valid <= 1;
 		outi.pc <= ini.pc;
 		if(ini.is_writing_memory) begin
-			if(ini.operation != 15 || flags[3]) begin
+			if(ini.operation != 15 || has_carry) begin
 				outi.destination_register <= ini.address_register;
 				outi.is_writing_memory <= 1;
 			end else begin
@@ -37,7 +37,7 @@ always_ff@(posedge clock, negedge reset_n) begin
 			outi.destination_register <= ini.destination_register;
 			outi.is_writing_memory <= 0;
 		end
-		outi.flags <= flags;
+		outi.flags <= {has_carry, is_negative, has_overflow, is_zero};
 		outi.destination_value <= destination_value;
 		outi.adjustment_value <= ini.operation != 15 ? ini.adjustment_value : 0;
 		outi.has_flushed <= ini.has_flushed;
@@ -64,14 +64,12 @@ function regval_t adjust(regval_t value, logic[1:0] op, regval_t adjustment_valu
 	endcase
 endfunction
 
-function logic[35:0] compute(regfile_t registers, regval_t left_value, right_value, adjustment_value, logic[3:0] operation, logic[2:0] adjustment_operation);
+function logic[35:0] compute(regfile_t registers, regval_t left_value, right_value, adjustment_value, logic[3:0] operation, logic[1:0] adjustment_operation);
 
 	regval_t adjusted_value, output_value;
 	logic has_carry, is_negative, has_overflow, is_zero;
 
-	adjusted_value= adjustment_operation[2]
-		? right_value + adjustment_value
-		: adjust(right_value, adjustment_operation, adjustment_value[3:0]);
+	adjusted_value= adjust(right_value, adjustment_operation, adjustment_value);
 	has_carry= 0;
 	case(operation)
 		0: {has_carry, output_value}= left_value + adjusted_value;

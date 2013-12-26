@@ -41,7 +41,7 @@ interface i_decode_to_read();
 regval_t pc, adjustment_value;
 regind_t destination_register, left_register, right_register, address_register;
 logic[3:0] operation;
-logic[2:0] adjustment_operation;
+logic[1:0] adjustment_operation;
 logic has_flushed, is_valid, is_reading_memory, is_writing_memory, hold;
 
 modport decode_out(
@@ -69,7 +69,7 @@ interface i_read_to_execute();
 regval_t pc, adjustment_value, left_value, right_value;
 regind_t destination_register, address_register;
 logic[3:0] operation;
-logic[2:0] adjustment_operation;
+logic[1:0] adjustment_operation;
 logic hold, has_flushed, is_valid, is_writing_memory;
 
 modport read_out(

@@ -25,9 +25,7 @@ always_ff@(posedge clock, negedge reset_n) begin
 		outi.operation <= ini.operation;
 		outi.destination_register <= ini.destination_register;
 		outi.left_value <= input_registers[ini.left_register];
-		outi.right_value <= ini.is_reading_memory
-			? data
-			: input_registers[ini.right_register];
+		outi.right_value <= ini.is_reading_memory ? data : input_registers[ini.right_register];
 		outi.address_register <= ini.address_register;
 		outi.adjustment_operation <= ini.adjustment_operation;
 		outi.adjustment_value <= ini.is_reading_memory && ini.is_writing_memory ?
