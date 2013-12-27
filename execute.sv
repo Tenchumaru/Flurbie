@@ -104,27 +104,3 @@ function logic[35:0] compute(regfile_t registers, regval_t left_value, right_val
 	return {has_carry, is_negative, has_overflow, is_zero, output_value};
 
 endfunction
-
-/*
-A Possible Implementation of Compare and Exchange
-
-Use a single register file that lives in the FPGA and is shared by all cores.
-This means putting this in cpu.sv, not core.sv.
-
-This works fine in a single-core implementation.  However, with multiple cores,
-I need a mechanism to prevent two cores from executing this code at exactly the
-same time.  Consider using a priority mechanism that allows core 0 to execute
-this before core 1.
-*/
-
-module CX#(parameter N = 8)(input logic clock, input logic[$clog2(N)-1:0] index, input regval_t comparand, replacement, output regval_t original);
-
-regval_t memory[(2**N)-1:0];
-
-always_ff@(posedge clock) begin
-	if(memory[index] == comparand)
-		memory[index] <= replacement;
-	original <= memory[index];
-end
-
-endmodule
