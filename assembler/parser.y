@@ -3,8 +3,6 @@
 #include <cstring>
 #include "assembler.h"
 
-#define VAL(x) get_value(x)
-
 int yylex();
 void yyerror(char const* message);
 
@@ -17,13 +15,16 @@ void yyerror(char const* message);
 	char* id;
 }
 
-%token INT NOP
-%token <value> OP SOP REG VALUE ASR LSR SHL
+%token INT NOP ASR
+%token <value> OP SOP REG VALUE
 %token <id> ID
+%nonassoc '?' ':'
+%left AND OR
 %left '+' '-'
 %left '&' '|' '^'
+%left LSR SHL
 %left '*' '/' '%'
-%precedence NEG /* negation:  unary minus */
+%precedence NEG /* negation:  unary minus, bit-wise complement, logical complement */
 %type <value> op condition expr shift optexpr
 
 %%
@@ -57,19 +58,27 @@ condition:
 | '?' ID { $$= compose_non_zero($2); }
 | '!' ID { $$= compose_zero($2); }
 ;
+
 expr:
-VALUE                { $$= $1;      }
-| ID                 { $$= VAL($1); }
-| expr '+' expr      { $$= $1 + $3; }
-| expr '-' expr      { $$= $1 - $3; }
-| expr '&' expr      { $$= $1 & $3; }
-| expr '|' expr      { $$= $1 | $3; }
-| expr '^' expr      { $$= $1 ^ $3; }
-| expr '*' expr      { $$= $1 * $3; }
-| expr '/' expr      { $$= $1 / $3; }
-| expr '%' expr      { $$= $1 % $3; }
-| '-' expr %prec NEG { $$= -$2;     }
-| '(' expr ')'       { $$= $2;      }
+VALUE                    { $$= $1;            }
+| ID                     { $$= get_value($1); }
+| expr '?' expr ':' expr { $$= $1 ? $3 : $5;  }
+| expr AND expr          { $$= $1 && $3;      }
+| expr OR expr           { $$= $1 || $3;      }
+| expr '+' expr          { $$= $1 + $3;       }
+| expr '-' expr          { $$= $1 - $3;       }
+| expr '&' expr          { $$= $1 & $3;       }
+| expr '|' expr          { $$= $1 | $3;       }
+| expr '^' expr          { $$= $1 ^ $3;       }
+| expr SHL expr          { $$= $1 << $3;      }
+| expr LSR expr          { $$= $1 >> $3;      }
+| expr '*' expr          { $$= $1 * $3;       }
+| expr '/' expr          { $$= $1 / $3;       }
+| expr '%' expr          { $$= $1 % $3;       }
+| '-' expr %prec NEG     { $$= -$2;           }
+| '~' expr %prec NEG     { $$= ~$2;           }
+| '!' expr %prec NEG     { $$= !$2;           }
+| '(' expr ')'           { $$= $2;            }
 ;
 
 shift:

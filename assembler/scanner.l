@@ -56,6 +56,8 @@ pc      { yylval.value= pc_index; return DBOUT(REG); }
 ">>>"   return DBOUT(ASR);
 "<<"    return DBOUT(SHL);
 ">>"    return DBOUT(LSR);
+"&&"    return DBOUT(AND);
+"||"    return DBOUT(OR);
 \n      return DBOUT('\n');
 .       return DBOUT(tolower(yytext[0]));
 %%
