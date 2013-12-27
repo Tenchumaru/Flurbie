@@ -8,8 +8,8 @@ There are fourteen of them:
 add, addc, sub, subb, mul, umul, div, udiv, and, nand, or, nor, xor, xnor
 
 Addressing modes:
-register-register:  op dr, sr1, sr2 (with optional shift)
-register-immediate:  op dr, sr1, value
+register-register:  op tr, lr, rr (with optional shift)
+register-immediate:  op tr, lr, value
 
 Memory Op Codes
 ---------------
@@ -35,17 +35,17 @@ Patterns
 26-23   op code (add, addc, sub, subb, mul, umul, div, udiv, and, nand, or, nor, xor, xnor, MEM, SPECIAL)
 
 standard:
-22-18   destination register (dr, 0-31)
+22-18   target register (tr, 0-31)
 17      source2 mode
         0       immediate source2
         1       register source2
-16-12   source register 1 (sr1, 0-31)
+16-12   left register (lr, 0-31)
 
-immediate source2:  dr= sr1 op value
+immediate source2:  tr= lr op value
 11-0    12-bit value sign-extended to 32 bits
 
-register source2:  dr= sr1 op (sr2 shop value)
-11-7    source register 2 (sr2, 0-31)
+register source2:  tr= lr op (rr shop value)
+11-7    right register (rr, 0-31)
 6-5     shift operation
         00      add -16 to 15
         01      left
@@ -75,11 +75,12 @@ store:  *(ar + value)= r
 15-11   address register (ar, 0-31)
 10-0    11-bit value sign-extended to 32 bits
 
-SPECIAL:  dr= *ar; if(*ar == sr1) *ar= sr2;
-22-18   destination register (dr, 0-31)
-16-12   source register 1 (sr1, 0-31)
-11-7    source register 2 (sr2, 0-31)
-6-2     address register
+SPECIAL:  tr= *ar; if(tr == cr) *ar= sr;
+22-18   target register (tr, 0-31)
+17      unused
+16-12   compare register (cr, 0-31)
+11-7    source register (sr, 0-31)
+6-2     address register (ar, 0-31)
 1-0     unused
 
 r31 is flags (User mode is in bit 31, CNVZ are in bits 30-27)
@@ -93,10 +94,10 @@ through r15 with its own copies of r16 through r31.  r0 is still always zero.
 
 Operation Forms
 ---------------
-immediate source2:  dr= sr1 op (R0 + value12)
-register source2:   dr= sr1 op (sr2 shop value5)
-ld:                 dr= R0 | *(ar + value11)
-ldi:                dr= R0 | (R0 + value15)
-ori:                dr= dr | (R0 + value15)
-store:              *(ar + value11)= dr | (R0 << value11)
-SPECIAL:            dr= *(ar + 0); if(dr == sr1) *(ar + 0)= (sr2 + 0);
+immediate source2:  tr= lr op (R0 + value12)
+register source2:   tr= lr op (rr shop value5)
+ld:                 tr= R0 | *(ar + value11)
+ldi:                tr= R0 | (R0 + value15)
+ori:                tr= tr | (R0 + value15)
+store:              *(ar + value11)= tr | (R0 << value11)
+SPECIAL:            tr= *(ar + 0); if(tr == lr) *(ar + 0)= (rr + 0);
