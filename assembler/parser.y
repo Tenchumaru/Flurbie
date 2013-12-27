@@ -6,6 +6,8 @@
 int yylex();
 void yyerror(char const* message);
 
+static int line_number= 1;
+
 #pragma warning(push)
 #pragma warning(disable: 4127 4244 4702)
 %}
@@ -32,7 +34,7 @@ void yyerror(char const* message);
 
 input:
 %empty
-| input line '\n'
+| input line '\n' { ++line_number; }
 ;
 
 line:
@@ -106,7 +108,7 @@ optexpr:
 #pragma warning(pop)
 
 void yyerror(char const* message) {
-	fprintf(stderr, "problem: %s\n", message);
+	fprintf(stderr, "problem in line %d: %s\n", line_number, message);
 }
 
 extern FILE *yyin, *yyout;
