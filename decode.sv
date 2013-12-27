@@ -67,13 +67,11 @@ always_comb begin
 				0: begin
 					// ld
 					is_reading_memory= 1;
-					// TODO: adjustment_value= $signed(address_offset);
-					adjustment_value= {{22{address_offset[10]}}, address_offset[9:0]};
+					adjustment_value= $signed(address_offset);
 				end
 				1: begin
 					// ldi
-					// TODO: adjustment_value= $signed(immediate_value);
-					adjustment_value= {{17{immediate_value[15]}}, immediate_value[14:0]};
+					adjustment_value= $signed(immediate_value);
 				end
 				2: begin
 					// xorih
@@ -86,8 +84,7 @@ always_comb begin
 					is_writing_memory= 1;
 					left_register= destination_register;
 					adjustment_operation= Left;
-					// TODO: adjustment_value= $signed(address_offset);
-					adjustment_value= {{22{address_offset[10]}}, address_offset[9:0]};
+					adjustment_value= $signed(address_offset);
 				end
 			endcase
 		end
@@ -102,13 +99,11 @@ always_comb begin
 		default:
 			if(is_register) begin
 				// When shifting, I only use the lower five bits.
-				// TODO: adjustment_value= $signed(raw_adjustment_value);
-				adjustment_value= {{28{raw_adjustment_value[4]}}, raw_adjustment_value[3:0]};
+				adjustment_value= $signed(raw_adjustment_value);
 			end else begin
 				right_register= 0;
 				adjustment_operation= Add;
-				// TODO: adjustment_value= $signed(immediate_operand);
-				adjustment_value= {{21{immediate_operand[11]}}, immediate_operand[10:0]};
+				adjustment_value= $signed(immediate_operand);
 			end
 	endcase
 end
