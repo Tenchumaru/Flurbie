@@ -43,7 +43,7 @@ sub     { yylval.value=  2 << 23; return DBOUT(OP); }
 xor     { yylval.value= 12 << 23; return DBOUT(OP); }
 or      { yylval.value= 10 << 23; return DBOUT(OP); }
 ldi     { yylval.value= LDI; return DBOUT(OP); }
-ori     { yylval.value= ORI; return DBOUT(OP); }
+xorih   { yylval.value= XORIH; return DBOUT(OP); }
 ld      { yylval.value= LD; return DBOUT(OP); }
 st      { yylval.value= ST; return DBOUT(OP); }
 int     { return DBOUT(INT); }

@@ -76,10 +76,10 @@ always_comb begin
 					adjustment_value= {{17{immediate_value[15]}}, immediate_value[14:0]};
 				end
 				2: begin
-					// ori
+					// xorih
+					operation= 12; // XOR
 					left_register= destination_register;
-					// TODO: adjustment_value= $signed(immediate_value);
-					adjustment_value= {{17{immediate_value[15]}}, immediate_value[14:0]};
+					adjustment_value= {immediate_value[15:0], 16'h0};
 				end
 				3: begin
 					// store

@@ -58,7 +58,7 @@ MEM:
 17-16   mop
         00      ld
         01      ldi
-        10      ori
+        10      xorih
         11      store
 
 ld:  r= *(ar + value)
@@ -68,7 +68,7 @@ ld:  r= *(ar + value)
 ldi:  r= value
 15-0    16-bit value sign-extended to 32 bits
 
-ori:  r |= value
+xorih:  r xor= value << 16
 15-0    16-bit unsigned value
 
 store:  *(ar + value)= r

@@ -132,7 +132,7 @@ void add_from_memory(int operation, int target_register, int address_register, i
 }
 
 void add_immediate(int operation, int target_register, int value) {
-	if(as_mem_op(operation) != LDI && as_mem_op(operation) != ORI) {
+	if(as_mem_op(operation) != LDI && as_mem_op(operation) != XORIH) {
 		fprintf(stderr, "invalid immediate operation %#x\n", operation);
 		operation= 0x80000000;
 	} else if(as_mem_op(operation) == LDI ? is_in_bit_range<15>(value) : static_cast<unsigned>(value) < (1 << 16)) {

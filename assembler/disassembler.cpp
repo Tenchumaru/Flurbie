@@ -10,7 +10,7 @@ static char const* operations[]= {
 };
 
 static char const* mem_operations[]= {
-	"ld", "ldi", "ori", "st"
+	"ld", "ldi", "xorih", "st"
 };
 
 template<unsigned highest, unsigned lowest>
