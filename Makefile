@@ -5,6 +5,7 @@
 MV=MOVE /Y
 RM=DEL /F /Q
 RMRF=RD /S /Q
+CP=COPY /Y
 
 ###############################################################################
 # Project Configuration:
@@ -35,6 +36,7 @@ clean:
 	IF EXIST $(OUTPUT_DIR) $(RMRF) $(OUTPUT_DIR)
 	IF EXIST db $(RMRF) db
 	IF EXIST incremental_db $(RMRF) incremental_db
+	IF EXIST "$(Configuration)" $(RM) "$(Configuration)"
 
 map: $(OUTPUT_DIR)/$(PROJECT).map.rpt
 fit: $(OUTPUT_DIR)/$(PROJECT).fit.rpt
@@ -58,12 +60,15 @@ EDA_ARGS=$(IPC_ARGS) --smart --read_settings_files=off --write_settings_files=of
 # Target implementations
 ###############################################################################
 
-$(OUTPUT_DIR)/$(PROJECT).map.rpt: $(ASSIGNMENT_FILES) $(SOURCE_FILES)
+"$(Configuration)/stp": $(ASSIGNMENT_FILES) $(SOURCE_FILES)
 !IF "$(Configuration)" == "Map Only"
 	quartus_stp $(PROJECT) --stp_file $(PROJECT).stp --disable
 !ELSE
 	quartus_stp $(PROJECT) --stp_file $(PROJECT).stp --enable
 !ENDIF
+	echo stp > $@
+
+$(OUTPUT_DIR)/$(PROJECT).map.rpt: "$(Configuration)/stp"
 	quartus_map $(MAP_ARGS) $(PROJECT)
 
 $(OUTPUT_DIR)/$(PROJECT).fit.rpt: $(OUTPUT_DIR)/$(PROJECT).map.rpt
