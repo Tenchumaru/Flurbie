@@ -48,11 +48,11 @@ eda: $(OUTPUT_DIR)/$(PROJECT).eda.rpt
 
 #IPC_ARGS=--ipc_flow=14 --ipc_mode
 IPC_ARGS=
-MAP_ARGS=--smart --read_settings_files=on --write_settings_files=off "$(PROJECT)" -c
-FIT_ARGS=--smart --read_settings_files=off --write_settings_files=off "$(PROJECT)" -c
-ASM_ARGS=--smart --read_settings_files=off --write_settings_files=off "$(PROJECT)" -c
-STA_ARGS=--smart "$(PROJECT)" -c
-EDA_ARGS=--smart --read_settings_files=off --write_settings_files=off "$(PROJECT)" -c
+MAP_ARGS=$(IPC_ARGS) --smart --read_settings_files=on --write_settings_files=off "$(PROJECT)" -c
+FIT_ARGS=$(IPC_ARGS) --smart --read_settings_files=off --write_settings_files=off "$(PROJECT)" -c
+ASM_ARGS=$(IPC_ARGS) --smart --read_settings_files=off --write_settings_files=off "$(PROJECT)" -c
+STA_ARGS=$(IPC_ARGS) --smart "$(PROJECT)" -c
+EDA_ARGS=$(IPC_ARGS) --smart --read_settings_files=off --write_settings_files=off "$(PROJECT)" -c
 
 ###############################################################################
 # Target implementations
@@ -64,16 +64,16 @@ $(OUTPUT_DIR)/$(PROJECT).map.rpt: $(ASSIGNMENT_FILES) $(SOURCE_FILES)
 !ELSE
 	quartus_stp $(PROJECT) --stp_file $(PROJECT).stp --enable
 !ENDIF
-	quartus_map $(IPC_ARGS) $(MAP_ARGS) $(PROJECT)
+	quartus_map $(MAP_ARGS) $(PROJECT)
 
 $(OUTPUT_DIR)/$(PROJECT).fit.rpt: $(OUTPUT_DIR)/$(PROJECT).map.rpt
-	quartus_fit $(IPC_ARGS) $(FIT_ARGS) $(PROJECT)
+	quartus_fit $(FIT_ARGS) $(PROJECT)
 
 $(OUTPUT_DIR)/$(PROJECT).asm.rpt: $(OUTPUT_DIR)/$(PROJECT).fit.rpt
-	quartus_asm $(IPC_ARGS) $(ASM_ARGS) $(PROJECT)
+	quartus_asm $(ASM_ARGS) $(PROJECT)
 
 $(OUTPUT_DIR)/$(PROJECT).sta.rpt: $(OUTPUT_DIR)/$(PROJECT).fit.rpt
-	quartus_sta $(IPC_ARGS) $(STA_ARGS) $(PROJECT)
+	quartus_sta $(STA_ARGS) $(PROJECT)
 
 $(OUTPUT_DIR)/$(PROJECT).eda.rpt: $(OUTPUT_DIR)/$(PROJECT).fit.rpt
-	quartus_eda $(IPC_ARGS) $(EDA_ARGS) $(PROJECT)
+	quartus_eda $(EDA_ARGS) $(PROJECT)
