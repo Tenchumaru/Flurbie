@@ -62,9 +62,9 @@ EDA_ARGS=$(IPC_ARGS) --smart --read_settings_files=off --write_settings_files=of
 
 "$(Configuration)/stp": $(ASSIGNMENT_FILES) $(SOURCE_FILES)
 !IF "$(Configuration)" == "Map Only"
-	quartus_stp $(PROJECT) --stp_file $(PROJECT).stp --disable
+	quartus_stp $(PROJECT) --signaltap --stp_file $(PROJECT).stp --disable
 !ELSE
-	quartus_stp $(PROJECT) --stp_file $(PROJECT).stp --enable
+	quartus_stp $(PROJECT) --signaltap --stp_file $(PROJECT).stp --enable
 !ENDIF
 	echo stp > $@
 
