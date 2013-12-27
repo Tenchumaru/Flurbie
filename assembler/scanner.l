@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "parser.h"
+#include "scanner.h"
 #ifdef DEBUG
 #	define DBOUT(v) (printf(" '%s':%d ", yytext, (v)), (v))
 #else
@@ -16,7 +17,8 @@ extern int pc_index;
 
 ws      [\r\t\v ]+
 rem     ;.*
-reg     r[1-3]?[0-9]
+reg1    r[012]?[0-9]
+reg2    r3[01]
 id      [_a-z][_0-9a-z]*
 hex     $[0-9a-f]+
 num     [0-9]+
@@ -37,15 +39,19 @@ and     { yylval.value=  8 << 23; return DBOUT(OP); }
 div     { yylval.value=  6 << 23; return DBOUT(OP); }
 mul     { yylval.value=  4 << 23; return DBOUT(OP); }
 nor     { yylval.value= 11 << 23; return DBOUT(OP); }
-opf     { yylval.value= 15 << 23; return DBOUT(OP); }
 sub     { yylval.value=  2 << 23; return DBOUT(OP); }
 xor     { yylval.value= 12 << 23; return DBOUT(OP); }
-cx      { yylval.value= 14 << 23; return DBOUT(OP); }
 or      { yylval.value= 10 << 23; return DBOUT(OP); }
+ldi     { yylval.value= LDI; return DBOUT(OP); }
+ori     { yylval.value= ORI; return DBOUT(OP); }
+ld      { yylval.value= LD; return DBOUT(OP); }
+st      { yylval.value= ST; return DBOUT(OP); }
 int     { return DBOUT(INT); }
 nop     { return DBOUT(NOP); }
+cx      { yylval.value= CX; return DBOUT(SOP); }
 pc      { yylval.value= pc_index; return DBOUT(REG); }
-{reg}   { yylval.value= atoi(yytext + 1); return DBOUT(REG); }
+{reg1}  |
+{reg2}  { yylval.value= atoi(yytext + 1); return DBOUT(REG); }
 {id}    { yylval.id= _strdup(yytext); return DBOUT(ID); }
 ">>>"   return DBOUT(ASR);
 "<<"    return DBOUT(SHL);

@@ -3,6 +3,8 @@
 #include <cstring>
 #include "assembler.h"
 
+#define VAL(x) get_value(x)
+
 int yylex();
 void yyerror(char const* message);
 
@@ -16,13 +18,13 @@ void yyerror(char const* message);
 }
 
 %token INT NOP
-%token <value> OP REG VALUE ASR LSR SHL
+%token <value> OP SOP REG VALUE ASR LSR SHL
 %token <id> ID
 %left '+' '-'
 %left '&' '|' '^'
 %left '*' '/' '%'
 %precedence NEG /* negation:  unary minus */
-%type <value> op expr shift optexpr
+%type <value> op condition expr shift optexpr
 
 %%
 
@@ -37,36 +39,42 @@ line:
 | '.' INT expr { add_value($3); }
 | ID ':' { add_symbol($1); }
 | ID '=' expr { add_symbol($1, $3); }
-| NOP { add_immediate(0x80000000, 0, 0); }
-| op REG ',' expr { add_immediate($1, $2, $4); }
+| NOP { add_immediate(0x80000000, 0, 0, 0); }
+| op REG ',' REG ',' expr { add_immediate($1, $2, $4, $6); }
 | op REG ',' REG ',' REG shift { add_register($1, $2, $4, $6, $7); }
 | op REG ',' '[' REG optexpr ']' { add_from_memory($1, $2, $5, $6); }
+| op REG ',' expr { add_immediate($1, $2, $4); }
 | op '[' REG optexpr ']' ',' REG { add_to_memory($1, $3, $4, $7); }
+| SOP condition REG ',' '[' REG ']' ',' REG ',' REG { add_special($1 | $2, $3, $6, $9, $11); }
 ;
 
 op:
-OP { $$= $1; }
-| OP '?' ID { $$= compose_non_zero($1, $3); }
-| OP '!' ID { $$= compose_zero($1, $3); }
+OP condition { $$= $1 | $2; }
 ;
 
+condition:
+%empty { $$= 0; }
+| '?' ID { $$= compose_non_zero($2); }
+| '!' ID { $$= compose_zero($2); }
+;
 expr:
-VALUE                { $$= $1;            }
-| ID                 { $$= get_value($1); }
-| expr '+' expr      { $$= $1 + $3;       }
-| expr '-' expr      { $$= $1 - $3;       }
-| expr '&' expr      { $$= $1 & $3;       }
-| expr '|' expr      { $$= $1 | $3;       }
-| expr '^' expr      { $$= $1 ^ $3;       }
-| expr '*' expr      { $$= $1 * $3;       }
-| expr '/' expr      { $$= $1 / $3;       }
-| expr '%' expr      { $$= $1 % $3;       }
-| '-' expr %prec NEG { $$= -$2;           }
-| '(' expr ')'       { $$= $2;            }
+VALUE                { $$= $1;      }
+| ID                 { $$= VAL($1); }
+| expr '+' expr      { $$= $1 + $3; }
+| expr '-' expr      { $$= $1 - $3; }
+| expr '&' expr      { $$= $1 & $3; }
+| expr '|' expr      { $$= $1 | $3; }
+| expr '^' expr      { $$= $1 ^ $3; }
+| expr '*' expr      { $$= $1 * $3; }
+| expr '/' expr      { $$= $1 / $3; }
+| expr '%' expr      { $$= $1 % $3; }
+| '-' expr %prec NEG { $$= -$2;     }
+| '(' expr ')'       { $$= $2;      }
 ;
 
 shift:
 %empty { $$= 0; }
+| ',' expr { $$= compose_shift(0, $2); }
 | SHL expr { $$= compose_shift(1, $2); }
 | LSR expr { $$= compose_shift(2, $2); }
 | ASR expr { $$= compose_shift(3, $2); }

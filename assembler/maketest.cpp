@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include "scanner.h"
 
 int main(int argc, char* argv[]) {
 	std::ofstream fs;
@@ -20,8 +21,10 @@ int main(int argc, char* argv[]) {
 		int value= (rand() << 20) | (rand() << 10) | rand();
 		if((value & 0xf8000000) == 0x80000000)
 			value= 0x80000000; // Produce a single nop.
-		if((value & 0x00020830) == 0x00020000)
-			value &= 0xffffffff0; // Produce no adjustment for no shift operation.
+		if((value & CX) < (14 << 23) && (value & 0x20000) && (value & 0x1f) == 0)
+			value &= 0xfffffff80; // Produce no shift operation for no adjustment.
+		if((value & CX) == CX)
+			value &= ~0x00020003; // Zero unused bits.
 		if(&fout != &std::cout)
 			fout << "0x" << std::setfill('0') << std::setw(8) << (i * 4) << " 0x" << std::setfill('0') << std::setw(8) << value << std::endl;
 		std::cout << value << std::endl;

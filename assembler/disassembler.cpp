@@ -1,79 +1,148 @@
 #include <crtdbg.h>
 #include <iostream>
+#include <fstream>
 
-static char const* opcodes[]= {
+static char const* operations[]= {
 	"add", "addc", "sub", "subb",
 	"mul", "umul", "div", "udiv",
-	"and", "or", "nand", "nor",
-	"xor", "xnor", "cx", "opf"
+	"and", "nand", "or", "nor",
+	"xor", "xnor", nullptr, "cx"
 };
 
+static char const* mem_operations[]= {
+	"ld", "ldi", "ori", "st"
+};
+
+template<unsigned highest, unsigned lowest>
+static unsigned extract_field(unsigned value) {
+	unsigned ones= static_cast<unsigned>(-1);
+	unsigned mask= ones << lowest;
+	unsigned mask2= ones << (highest + 1);
+	value &= mask & ~mask2;
+	return value >> lowest;
+}
+
+template<unsigned bit>
+static bool extract_field(unsigned value) {
+	return (value & (1 << bit)) != 0;
+}
+
+template<unsigned highest>
+static signed extract_signed(unsigned value) {
+	unsigned ones= static_cast<unsigned>(-1);
+	unsigned mask= ones << (highest + 1);
+	bool is_negative= (value & (1 << highest)) != 0;
+	return is_negative ? mask | value : value & ~mask;
+}
+
 int main(int argc, char* argv[]) {
-	argc, argv;
+	// Creat the input and output file streams.
+	std::ifstream fsin;
+	std::istream& fin= argc < 2 ? std::cin : (fsin.open(argv[1]), fsin);
+	if(!fin) {
+		std::cerr << "cannot open " << argv[1] << std::endl;
+		return 1;
+	}
+	std::ofstream fsout;
+	std::ostream& fout= argc < 3 ? std::cout : (fsout.open(argv[2]), fsout);
+	if(!fout) {
+		std::cerr << "cannot open " << argv[2] << std::endl;
+		return 1;
+	}
+
+	// Disassemble the input to the output.
 	unsigned value;
-	while(std::cin >> std::hex >> value) {
-		if((value & 0xf8000000) == 0x80000000)
-			std::cout << "nop";
+	while(fin >> std::hex >> value) {
+		bool is_active= extract_field<31>(value);
+		unsigned flags= extract_field<30, 27>(value);
+		if(is_active && flags == 0)
+			// All instructions with an active flag mask of zero map to NOP.
+			fout << "nop";
 		else {
-			std::cout << opcodes[(value & 0x07800000) >> 23];
-			if(value & 0x78000000) {
-				char active= value & 0x80000000 ? '?' : '!';
-				std::cout << active;
-				if(value & 0x40000000)
-					std::cout << 'c';
-				if(value & 0x20000000)
-					std::cout << 'n';
-				if(value & 0x10000000)
-					std::cout << 'v';
-				if(value & 0x08000000)
-					std::cout << 'z';
+			unsigned operation= extract_field<26, 23>(value);
+			unsigned mem_operation= extract_field<17, 16>(value);
+			if(operation == 14) {
+				// MEM
+				fout << mem_operations[mem_operation];
+			} else {
+				// STANDARD or SPECIAL
+				fout << operations[operation];
 			}
-			std::cout << ' ';
-			unsigned dr= (value & 0x007c0000) >> 18;
-			if(value & 0x00020000) {
-				unsigned sr1= (value & 0x0001f000) >> 12;
-				if(value & 0x00000800) {
-					// indirect
-					unsigned adjustment= value & 0x000003ff;
-					if(adjustment & 0x00000200)
-						adjustment |= 0xfffffc00;
-					if(value & 0x00000400) {
-						// to memory
-						std::cout << "[r" << dr << ", " << (int)adjustment << "], r" << sr1;
-					} else {
-						// from memory
-						std::cout << "r" << dr << ", [r" << sr1 << ", " << (int)adjustment << "]";
+			if(flags != 0) {
+				char active= is_active ? '?' : '!';
+				fout << active;
+				if(flags & 0x8)
+					fout << 'c';
+				if(flags & 0x4)
+					fout << 'n';
+				if(flags & 0x2)
+					fout << 'v';
+				if(flags & 0x1)
+					fout << 'z';
+			}
+			fout << ' ';
+			if(operation == 14) {
+				// MEM
+				unsigned r= extract_field<22, 18>(value);
+				if(mem_operation == 0) {
+					// ld
+					unsigned ar= extract_field<15, 11>(value);
+					signed adjustment= extract_signed<10>(value);
+					fout << 'r' << r << ", [r" << ar << ", " << adjustment << "]";
+				} else if(mem_operation == 1) {
+					// ldi
+					signed immediate_value= extract_signed<15>(value);
+					fout << 'r' << r << ", " << immediate_value;
+				} else if(mem_operation == 2) {
+					// ori
+					unsigned immediate_value= extract_field<15, 0>(value);
+					fout << 'r' << r << ", " << immediate_value;
+				} else if(mem_operation == 3) {
+					// st
+					unsigned ar= extract_field<15, 11>(value);
+					signed adjustment= extract_signed<10>(value);
+					fout << "[r" << ar << ", " << adjustment << "], r" << r;
+				}
+			} else if(operation == 15) {
+				// SPECIAL
+				unsigned dr= extract_field<22, 18>(value);
+				unsigned sr1= extract_field<16, 12>(value);
+				unsigned sr2= extract_field<11, 7>(value);
+				unsigned ar= extract_field<6, 2>(value);
+				fout << 'r' << dr << ", [r" << ar << "], r" << sr1 << ", r" << sr2;
+			} else {
+				// STANDARD
+				unsigned dr= extract_field<22, 18>(value);
+				bool is_register= extract_field<17>(value);
+				unsigned sr1= extract_field<16, 12>(value);
+				if(is_register) {
+					unsigned sr2= extract_field<11, 7>(value);
+					unsigned shift_operation= extract_field<6, 5>(value);
+					fout << 'r' << dr << ", r" << sr1 << ", r" << sr2;
+					unsigned adjustment= extract_field<4, 0>(value);
+					if(adjustment != 0) {
+						switch(shift_operation) {
+						case 0: // add signed
+							fout << ", " << extract_signed<4>(value);
+							break;
+						case 1: // left
+							fout << " << " << adjustment;
+							break;
+						case 2: // logical right
+							fout << " >> " << adjustment;
+							break;
+						case 3: // arithmetic right
+							fout << " >>> " << adjustment;
+							break;
+						}
 					}
 				} else {
-					// two source registers with shift
-					unsigned sr2= (value & 0x000007c0) >> 6;
-					std::cout << 'r' << dr << ", r" << sr1 << ", r" << sr2;
-					unsigned shift= 1 + (value & 0x0000000f);
-					switch(value & 0x00000030) {
-					case 0:
-						break;
-					case 0x10: // left
-						std::cout << " << " << shift;
-						break;
-					case 0x20: // logical right
-						std::cout << " >> " << shift;
-						break;
-					case 0x30: // arithmetic right
-						std::cout << " >>> " << shift;
-						break;
-					}
+					// immediate operand
+					fout << 'r' << dr << ", r" << sr1 << ", " << extract_signed<11>(value);
 				}
-			} else {
-				// immediate
-				std::cout << 'r' << dr;
-				if(value & 0x00010000)
-					value |= 0xffff0000;
-				else
-					value &= 0x0000ffff;
-				std::cout << ", #" << (int)value;
 			}
 		}
-		std::cout << std::endl;
+		fout << std::endl;
 	}
 	return 0;
 }

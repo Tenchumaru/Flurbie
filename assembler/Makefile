@@ -1,55 +1,63 @@
-#CFLAGS=-nologo -DNDEBUG -W4 -WX -O2 -Zc:wchar_t -Zc:forScope -EHsc -MD
+!IF "$(Configuration)" == "Debug"
 CFLAGS=-nologo -D_DEBUG -W4 -WX -Od -Zc:wchar_t -Zc:forScope -ZI -EHsc -MDd
+!ELSEIF "$(Configuration)" == "Release"
+CFLAGS=-nologo -DNDEBUG -W4 -WX -O2 -Zc:wchar_t -Zc:forScope -EHsc -MD
+!ELSE
+!ERROR No configuration specified.
+!ENDIF
 
-all: as.exe das.exe from_mem.exe to_mem.exe mktest.exe
+RM=DEL /F /Q
 
-as.exe: parser.obj scanner.obj assembler.obj
-	cl $(CFLAGS) /Feas.exe parser.obj scanner.obj assembler.obj
+all: $(Configuration)/as.exe $(Configuration)/das.exe $(Configuration)/from_mem.exe $(Configuration)/to_mem.exe $(Configuration)/mktest.exe
 
-parser.obj: parser.cpp
-	cl $(CFLAGS) -c parser.cpp
+$(Configuration)/as.exe: $(Configuration)/parser.obj $(Configuration)/scanner.obj $(Configuration)/assembler.obj
+	cl $(CFLAGS) -Fe$@ $**
 
-scanner.obj: scanner.cpp
-	cl $(CFLAGS) -c scanner.cpp
+$(Configuration)/parser.obj: parser.cpp assembler.h
+	cl $(CFLAGS) -c -Fo$@ parser.cpp
 
-assembler.obj: assembler.cpp assembler.h
-	cl $(CFLAGS) -c assembler.cpp
+$(Configuration)/scanner.obj: scanner.cpp scanner.h
+	cl $(CFLAGS) -c -Fo$@ scanner.cpp
 
-parser.cpp: parser.y assembler.h
-	win_bison --defines=parser.h --output=parser.cpp parser.y
+$(Configuration)/assembler.obj: assembler.cpp assembler.h scanner.h
+	cl $(CFLAGS) -c -Fo$@ assembler.cpp
 
-scanner.cpp: scanner.l
+parser.cpp: parser.y
+	win_bison --verbose --defines=parser.h --output=parser.cpp parser.y
+
+scanner.cpp: scanner.l parser.cpp
 	win_flex --case-insensitive --fast --wincompat --outfile=scanner.cpp scanner.l
 
-das.exe: disassembler.obj
-	cl $(CFLAGS) /Fedas.exe disassembler.obj
+$(Configuration)/das.exe: $(Configuration)/disassembler.obj
+	cl $(CFLAGS) -Fe$@ $**
 
-disassembler.obj: disassembler.cpp
-	cl $(CFLAGS) -c disassembler.cpp
+$(Configuration)/disassembler.obj: disassembler.cpp
+	cl $(CFLAGS) -c -Fo$@ disassembler.cpp
 
-from_mem.exe: from_memory.obj
-	cl $(CFLAGS) /Fefrom_mem.exe from_memory.obj
+$(Configuration)/from_mem.exe: $(Configuration)/from_memory.obj
+	cl $(CFLAGS) -Fe$@ $**
 
-from_memory.obj: from_memory.cpp
-	cl $(CFLAGS) -c from_memory.cpp
+$(Configuration)/from_memory.obj: from_memory.cpp
+	cl $(CFLAGS) -c -Fo$@ from_memory.cpp
 
-to_mem.exe: to_memory.obj
-	cl $(CFLAGS) /Feto_mem.exe to_memory.obj
+$(Configuration)/to_mem.exe: $(Configuration)/to_memory.obj
+	cl $(CFLAGS) -Fe$@ $**
 
-to_memory.obj: to_memory.cpp
-	cl $(CFLAGS) -c to_memory.cpp
+$(Configuration)/to_memory.obj: to_memory.cpp
+	cl $(CFLAGS) -c -Fo$@ to_memory.cpp
 
-mktest.exe: maketest.obj
-	cl $(CFLAGS) /Femktest.exe maketest.obj
+$(Configuration)/mktest.exe: $(Configuration)/maketest.obj
+	cl $(CFLAGS) -Fe$@ $**
 
-maketest.obj: maketest.cpp
-	cl $(CFLAGS) -c maketest.cpp
+$(Configuration)/maketest.obj: maketest.cpp scanner.h
+	cl $(CFLAGS) -c -Fo$@ maketest.cpp
 
-test: mktest.exe das.exe as.exe
-	mktest.exe l.txt 9999 9 | das.exe | as.exe > r.txt
-	fc l.txt r.txt
+test: $(Configuration)/mktest.exe $(Configuration)/das.exe $(Configuration)/as.exe
+	$(Configuration)\mktest.exe $(Configuration)\l.txt 9999 9 | $(Configuration)\das.exe | $(Configuration)\as.exe > $(Configuration)\r.txt
+	fc $(Configuration)\l.txt $(Configuration)\r.txt
 
 clean:
+	IF EXIST $(Configuration) DEL /F /Q $(Configuration)
 	IF EXIST *.obj DEL /F /Q *.obj
 	IF EXIST as.* DEL /F /Q as.*
 	IF EXIST das.* DEL /F /Q das.*
@@ -59,4 +67,5 @@ clean:
 	IF EXIST vc100.* DEL /F /Q vc100.*
 	IF EXIST parser.cpp DEL /F /Q parser.cpp
 	IF EXIST parser.h DEL /F /Q parser.h
+	IF EXIST parser.output DEL /F /Q parser.output
 	IF EXIST scanner.cpp DEL /F /Q scanner.cpp

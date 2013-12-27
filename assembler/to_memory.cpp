@@ -83,29 +83,5 @@ int main(int argc, char* argv[]) {
 		fout << std::setw(8) << fill;
 	}
 
-#if 0
-	// Format the input to the output.
-	int n= 0;
-	char s[9]= {};
-	/*
-		2 -> 6,7
-		4 -> 4,5
-		6 -> 2,3
-		8 -> 0,1
-	*/
-	for(int i= 2; fin >> std::hex >> s[8 - i] >> s[9 - i]; i += 2) {
-		if(i % 8 == 0) {
-			i= 0;
-			fout << s;
-			n += 4;
-		}
-	}
-
-	// If there is any padding, use it.
-	for(; n < padding; ++n) {
-		fout << "FF";
-	}
-#endif
-
 	return 0;
 }
