@@ -12,7 +12,8 @@
 *.la
 *.a
 
-Debug
+Map Only
+Release
 db
 incremental_db
 output_files
@@ -21,6 +22,7 @@ system
 *.bak
 *.chg
 *.lnk
+*.log
 *.opensdf
 *.rpt
 *.sdf
@@ -30,4 +32,3 @@ system
 system.cmp
 system.html
 system.sopcinfo
-assembler/*.s

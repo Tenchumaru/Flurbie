@@ -2,86 +2,74 @@
 !ERROR No configuration specified.
 !ENDIF
 
-MV = MOVE /Y
-RM = DEL /F /Q
-RMRF = RD /S /Q
+MV=MOVE /Y
+RM=DEL /F /Q
+RMRF=RD /S /Q
 
-###################################################################
+###############################################################################
 # Project Configuration:
 #
-# Specify the name of the design (project), the Quartus II Settings
-# File (.qsf), and the list of source files used.
-###################################################################
+# Specify the name of the design (project), the Quartus II Settings File
+# (.qsf), the list of source files used, and the output directory.
+###############################################################################
 
-PROJECT = cpu
-SOURCE_FILES = cpu.sv registers.sv core.sv fetch.sv decode.sv read.sv execute.sv write.sv
-ASSIGNMENT_FILES = cpu.qpf cpu.qsf
-OUTPUT_DIR = output_files
+PROJECT=cpu
+ASSIGNMENT_FILES=cpu.qpf cpu.qsf
+SOURCE_FILES=cpu.sv registers.sv core.sv fetch.sv decode.sv read.sv execute.sv write.sv
+OUTPUT_DIR=output_files
 
-###################################################################
+###############################################################################
 # Main Targets
 #
 # all: build everything
 # clean: remove output files and database
-###################################################################
+###############################################################################
 
-all: $(OUTPUT_DIR)/smart.log $(OUTPUT_DIR)/$(PROJECT).asm.rpt $(OUTPUT_DIR)/$(PROJECT).sta.rpt
+!IF "$(Configuration)" == "Map Only"
+all: map
+!ELSE
+all: map fit asm sta eda
+!ENDIF
 
 clean:
-	$(RM) $(OUTPUT_DIR)
+	IF EXIST $(OUTPUT_DIR) $(RMRF) $(OUTPUT_DIR)
 	IF EXIST db $(RMRF) db
 	IF EXIST incremental_db $(RMRF) incremental_db
 
-map: $(OUTPUT_DIR)/smart.log $(OUTPUT_DIR)/$(PROJECT).map.rpt
-fit: $(OUTPUT_DIR)/smart.log $(OUTPUT_DIR)/$(PROJECT).fit.rpt
-asm: $(OUTPUT_DIR)/smart.log $(OUTPUT_DIR)/$(PROJECT).asm.rpt
-sta: $(OUTPUT_DIR)/smart.log $(OUTPUT_DIR)/$(PROJECT).sta.rpt
-smart: $(OUTPUT_DIR)/smart.log
+map: $(OUTPUT_DIR)/$(PROJECT).map.rpt
+fit: $(OUTPUT_DIR)/$(PROJECT).fit.rpt
+asm: $(OUTPUT_DIR)/$(PROJECT).asm.rpt
+sta: $(OUTPUT_DIR)/$(PROJECT).sta.rpt
+eda: $(OUTPUT_DIR)/$(PROJECT).eda.rpt
 
-###################################################################
+###############################################################################
 # Executable Configuration
-###################################################################
+###############################################################################
 
-MAP_ARGS = --read_settings_files=on --write_settings_files=off "$(PROJECT)" -c
-FIT_ARGS = --read_settings_files=on --write_settings_files=off "$(PROJECT)" -c
-ASM_ARGS = --read_settings_files=on --write_settings_files=off "$(PROJECT)" -c
-STA_ARGS = "$(PROJECT)" -c
+#IPC_ARGS=--ipc_flow=14 --ipc_mode
+IPC_ARGS=
+MAP_ARGS=--smart --read_settings_files=on --write_settings_files=off "$(PROJECT)" -c
+FIT_ARGS=--smart --read_settings_files=off --write_settings_files=off "$(PROJECT)" -c
+ASM_ARGS=--smart --read_settings_files=off --write_settings_files=off "$(PROJECT)" -c
+STA_ARGS=--smart "$(PROJECT)" -c
+EDA_ARGS=--smart --read_settings_files=off --write_settings_files=off "$(PROJECT)" -c
 
-###################################################################
+###############################################################################
 # Target implementations
-###################################################################
+###############################################################################
 
-STAMP = echo done >
-
-$(OUTPUT_DIR)/$(PROJECT).map.rpt: $(SOURCE_FILES)
+$(OUTPUT_DIR)/$(PROJECT).map.rpt: $(ASSIGNMENT_FILES) $(SOURCE_FILES)
 	quartus_stp $(PROJECT) --stp_file $(PROJECT).stp --enable
-	quartus_map $(MAP_ARGS) $(PROJECT)
-	IF EXIST map.chg $(MV) ( map.chg $(OUTPUT_DIR)\fit.chg ) ELSE ( $(STAMP) $(OUTPUT_DIR)\fit.chg )
+	quartus_map $(IPC_ARGS) $(MAP_ARGS) $(PROJECT)
 
-$(OUTPUT_DIR)/$(PROJECT).fit.rpt: $(OUTPUT_DIR)/fit.chg $(OUTPUT_DIR)/$(PROJECT).map.rpt
-	quartus_fit $(FIT_ARGS) $(PROJECT)
-	$(STAMP) $(OUTPUT_DIR)\asm.chg
-	$(STAMP) $(OUTPUT_DIR)\sta.chg
+$(OUTPUT_DIR)/$(PROJECT).fit.rpt: $(OUTPUT_DIR)/$(PROJECT).map.rpt
+	quartus_fit $(IPC_ARGS) $(FIT_ARGS) $(PROJECT)
 
-$(OUTPUT_DIR)/$(PROJECT).asm.rpt: $(OUTPUT_DIR)/asm.chg $(OUTPUT_DIR)/$(PROJECT).fit.rpt
-	quartus_asm $(ASM_ARGS) $(PROJECT)
+$(OUTPUT_DIR)/$(PROJECT).asm.rpt: $(OUTPUT_DIR)/$(PROJECT).fit.rpt
+	quartus_asm $(IPC_ARGS) $(ASM_ARGS) $(PROJECT)
 
-$(OUTPUT_DIR)/$(PROJECT).sta.rpt: $(OUTPUT_DIR)/sta.chg $(OUTPUT_DIR)/$(PROJECT).fit.rpt
-	quartus_sta $(STA_ARGS) $(PROJECT)
+$(OUTPUT_DIR)/$(PROJECT).sta.rpt: $(OUTPUT_DIR)/$(PROJECT).fit.rpt
+	quartus_sta $(IPC_ARGS) $(STA_ARGS) $(PROJECT)
 
-$(OUTPUT_DIR)/smart.log: $(ASSIGNMENT_FILES)
-	quartus_sh --determine_smart_action $(PROJECT) > $(OUTPUT_DIR)\smart.log
-
-###################################################################
-# Project initialization
-###################################################################
-
-$(ASSIGNMENT_FILES):
-	quartus_sh --prepare $(PROJECT)
-
-$(OUTPUT_DIR)/fit.chg:
-	$(STAMP) $(OUTPUT_DIR)\fit.chg
-$(OUTPUT_DIR)/sta.chg:
-	$(STAMP) $(OUTPUT_DIR)\sta.chg
-$(OUTPUT_DIR)/asm.chg:
-	$(STAMP) $(OUTPUT_DIR)\asm.chg
+$(OUTPUT_DIR)/$(PROJECT).eda.rpt: $(OUTPUT_DIR)/$(PROJECT).fit.rpt
+	quartus_eda $(IPC_ARGS) $(EDA_ARGS) $(PROJECT)
