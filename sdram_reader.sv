@@ -41,9 +41,9 @@ module sdram_reader(
 	output logic       data_ready_n
 );
 
-assign avm_m0_address= read_address;
-assign avm_m0_read_n= read_n;
-assign read_data= avm_m0_readdata;
-assign data_ready_n= avm_m0_waitrequest | read_n;
+	assign avm_m0_address= read_address;
+	assign avm_m0_read_n= read_n;
+	assign read_data= avm_m0_readdata;
+	assign data_ready_n= avm_m0_waitrequest | read_n;
 
 endmodule

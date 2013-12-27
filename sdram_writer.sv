@@ -11,9 +11,9 @@ module sdram_writer(
 	output logic       data_written_n
 );
 
-assign avm_m0_address= write_address;
-assign avm_m0_write_n= write_n;
-assign avm_m0_writedata= write_data;
-assign data_written_n= avm_m0_waitrequest | write_n;
+	assign avm_m0_address= write_address;
+	assign avm_m0_write_n= write_n;
+	assign avm_m0_writedata= write_data;
+	assign data_written_n= avm_m0_waitrequest | write_n;
 
 endmodule
