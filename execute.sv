@@ -5,62 +5,62 @@ module execute(
 	i_execute_to_write.execute_out outi
 );
 
-// Declare derived signals.
-regfile_t input_registers;
-logic has_carry, is_negative, has_overflow, is_zero;
-regval_t destination_value;
+	// Declare derived signals.
+	regfile_t input_registers;
+	logic has_carry, is_negative, has_overflow, is_zero;
+	regval_t destination_value;
 
-// Assign derived signals.
-assign input_registers= subst_in(ini.pc, registers);
-assign {has_carry, is_negative, has_overflow, is_zero, destination_value}= compute(input_registers,
-	ini.left_value, ini.right_value, ini.adjustment_value,
-	ini.operation, ini.adjustment_operation);
+	// Assign derived signals.
+	assign input_registers= subst_in(ini.pc, registers);
+	assign {has_carry, is_negative, has_overflow, is_zero, destination_value}= compute(input_registers,
+		ini.left_value, ini.right_value, ini.adjustment_value,
+		ini.operation, ini.adjustment_operation);
 
-always_ff@(posedge clock, negedge reset_n) begin
-	if(!reset_n) begin
-		outi.is_valid <= 0;
-		outi.has_flushed <= 0;
-	end else if(outi.hold) begin
+	always_ff@(posedge clock, negedge reset_n) begin
+		if(!reset_n) begin
+			outi.is_valid <= 0;
+			outi.has_flushed <= 0;
+		end else if(outi.hold) begin
 		// Don't do anything.
-	end else if(ini.is_valid) begin
-		outi.is_valid <= 1;
-		outi.pc <= ini.pc;
-		if(ini.is_writing_memory) begin
-			if(ini.operation != 15 || has_carry) begin
-				outi.destination_register <= ini.address_register;
-				outi.is_writing_memory <= 1;
+		end else if(ini.is_valid) begin
+			outi.is_valid <= 1;
+			outi.pc <= ini.pc;
+			if(ini.is_writing_memory) begin
+				if(ini.operation != 15 || has_carry) begin
+					outi.destination_register <= ini.address_register;
+					outi.is_writing_memory <= 1;
+				end else begin
+					outi.destination_register <= 0;
+					outi.is_writing_memory <= 0;
+				end
 			end else begin
-				outi.destination_register <= 0;
+				outi.destination_register <= ini.destination_register;
 				outi.is_writing_memory <= 0;
 			end
+			outi.flags <= {has_carry, is_negative, has_overflow, is_zero};
+			outi.destination_value <= destination_value;
+			outi.adjustment_value <= ini.operation != 15 ? ini.adjustment_value : 0;
+			outi.has_flushed <= ini.has_flushed;
 		end else begin
-			outi.destination_register <= ini.destination_register;
-			outi.is_writing_memory <= 0;
+			outi.is_valid <= 0;
+			outi.has_flushed <= ini.has_flushed;
 		end
-		outi.flags <= {has_carry, is_negative, has_overflow, is_zero};
-		outi.destination_value <= destination_value;
-		outi.adjustment_value <= ini.operation != 15 ? ini.adjustment_value : 0;
-		outi.has_flushed <= ini.has_flushed;
-	end else begin
-		outi.is_valid <= 0;
-		outi.has_flushed <= ini.has_flushed;
 	end
-end
 
-assign ini.hold= reset_n && outi.hold;
+	assign ini.hold= reset_n && outi.hold;
 
 endmodule
 
 function regval_t adjust(regval_t value, logic[1:0] op, regval_t adjustment_value);
 	case(op)
-	Add:
-		return value + adjustment_value;
-	Left:
-		return value << adjustment_value[4:0];
-	LogicalRight:
-		return value >> adjustment_value[4:0];
-	ArithmeticRight:
-		return $signed(value) >>> adjustment_value[4:0];
+		Add:
+			return value + adjustment_value;
+		Left:
+			return value << adjustment_value[4:0];
+		LogicalRight:
+			return value >> adjustment_value[4:0];
+		ArithmeticRight:
+			return $signed(value) >>> adjustment_value[4:0];
 	endcase
 endfunction
 
@@ -91,7 +91,10 @@ function logic[35:0] compute(regfile_t registers, regval_t left_value, right_val
 		12: output_value= left_value ^ adjusted_value;
 		13: output_value= ~(left_value ^ adjusted_value);
 		14: output_value= left_value;
-		15: begin has_carry= left_value == right_value; output_value= adjustment_value; end
+		15: begin
+			has_carry= left_value == right_value;
+			output_value= adjustment_value;
+		end
 	endcase
 	is_negative= output_value[31];
 	// TODO:  overflow is incorrect for multiplication and division.
