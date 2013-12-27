@@ -59,7 +59,11 @@ EDA_ARGS=--smart --read_settings_files=off --write_settings_files=off "$(PROJECT
 ###############################################################################
 
 $(OUTPUT_DIR)/$(PROJECT).map.rpt: $(ASSIGNMENT_FILES) $(SOURCE_FILES)
+!IF "$(Configuration)" == "Map Only"
+	quartus_stp $(PROJECT) --stp_file $(PROJECT).stp --disable
+!ELSE
 	quartus_stp $(PROJECT) --stp_file $(PROJECT).stp --enable
+!ENDIF
 	quartus_map $(IPC_ARGS) $(MAP_ARGS) $(PROJECT)
 
 $(OUTPUT_DIR)/$(PROJECT).fit.rpt: $(OUTPUT_DIR)/$(PROJECT).map.rpt
