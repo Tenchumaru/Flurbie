@@ -29,11 +29,16 @@ always_ff@(posedge clock, negedge reset_n) begin
 		outi.address_register <= ini.address_register;
 		outi.adjustment_operation <= ini.adjustment_operation;
 		outi.adjustment_value <= ini.is_reading_memory && ini.is_writing_memory ?
+			// TODO
+			// This works fine in a single-core implementation.  However, with
+			// multiple cores, I need a mechanism to prevent two cores from
+			// executing this code at exactly the same time.  Consider using a
+			// priority mechanism that allows core 0 to execute this before
+			// core 1, which executes before core 2, etc.
 			input_registers[ini.right_register] :
 			ini.adjustment_value;
 		outi.is_writing_memory <= ini.is_writing_memory;
 		outi.has_flushed <= ini.has_flushed;
-		// TODO:  lock the data bus if performing a cx operation.
 	end else begin
 		outi.is_valid <= 0;
 		outi.has_flushed <= ini.has_flushed;
