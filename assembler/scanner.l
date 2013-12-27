@@ -48,6 +48,7 @@ ld      { yylval.value= LD; return DBOUT(OP); }
 st      { yylval.value= ST; return DBOUT(OP); }
 int     { return DBOUT(INT); }
 nop     { return DBOUT(NOP); }
+set     { return DBOUT(SET); }
 cx      { yylval.value= CX; return DBOUT(SOP); }
 pc      { yylval.value= pc_index; return DBOUT(REG); }
 {reg1}  |

@@ -15,7 +15,7 @@ void yyerror(char const* message);
 	char* id;
 }
 
-%token INT NOP ASR
+%token INT NOP SET ASR
 %token <value> OP SOP REG VALUE
 %token <id> ID
 %nonassoc '?' ':'
@@ -43,6 +43,7 @@ line:
 | NOP { add_immediate(0x80000000, 0, 0, 0); }
 | op REG ',' REG ',' expr { add_immediate($1, $2, $4, $6); }
 | op REG ',' REG ',' REG shift { add_register($1, $2, $4, $6, $7); }
+| SET condition REG ',' REG shift { add_register($2, $3, 0, $5, $6); }
 | op REG ',' '[' REG optexpr ']' { add_from_memory($1, $2, $5, $6); }
 | op REG ',' expr { add_immediate($1, $2, $4); }
 | op '[' REG optexpr ']' ',' REG { add_to_memory($1, $3, $4, $7); }
