@@ -15,11 +15,12 @@ void yyerror(char const* message);
 	char* id;
 }
 
-%token INT NOP SET ASR
+%token INT NOP SET ASR EQ NE LE GE
 %token <value> OP SOP REG VALUE
 %token <id> ID
 %nonassoc '?' ':'
 %left AND OR
+%left EQ NE LE GE '<' '>'
 %left '+' '-'
 %left '&' '|' '^'
 %left LSR SHL
@@ -66,6 +67,12 @@ VALUE                    { $$= $1;            }
 | expr '?' expr ':' expr { $$= $1 ? $3 : $5;  }
 | expr AND expr          { $$= $1 && $3;      }
 | expr OR expr           { $$= $1 || $3;      }
+| expr EQ expr           { $$= $1 == $3;      }
+| expr NE expr           { $$= $1 != $3;      }
+| expr LE expr           { $$= $1 <= $3;      }
+| expr GE expr           { $$= $1 >= $3;      }
+| expr '<' expr          { $$= $1 < $3;       }
+| expr '>' expr          { $$= $1 > $3;       }
 | expr '+' expr          { $$= $1 + $3;       }
 | expr '-' expr          { $$= $1 - $3;       }
 | expr '&' expr          { $$= $1 & $3;       }
