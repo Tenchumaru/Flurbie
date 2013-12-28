@@ -16,14 +16,10 @@ module write(
 			if(i == Flags) begin
 				assign registers[i]= i == ini.destination_register && !ini.is_writing_memory
 					? ini.destination_value
-					: ini.has_upper_value && i == ini.destination_register + 1 && !ini.is_writing_memory
-					? ini.upper_value
 					: {input_registers[i][31], ini.flags, input_registers[i][26:0]};
 			end else if(i == PC) begin
 				assign registers[i]= i == ini.destination_register && !ini.is_writing_memory
 					? ini.destination_value
-					: ini.has_upper_value && i == ini.destination_register + 1 && !ini.is_writing_memory
-					? ini.upper_value
 					: ini.pc;
 			end else if(i == 0) begin
 				assign registers[i]= 0;
