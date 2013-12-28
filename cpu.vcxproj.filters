@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="registers.sv">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="Makefile" />
+    <None Include="cpu.txt" />
+    <None Include="core.sv">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="cpu.qpf">
+      <Filter>Configuration Files</Filter>
+    </None>
+    <None Include="cpu.stp">
+      <Filter>Configuration Files</Filter>
+    </None>
+    <None Include="cpu.qsf">
+      <Filter>Configuration Files</Filter>
+    </None>
+    <None Include="cpu.sdc">
+      <Filter>Configuration Files</Filter>
+    </None>
+    <None Include="cpu.sv">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="decode.sv">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="execute.sv">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="fetch.sv">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="decode_tb.sv">
+      <Filter>Testbench Files</Filter>
+    </None>
+    <None Include="make_tb.js">
+      <Filter>Testbench Files</Filter>
+    </None>
+    <None Include="decode_tb.txt">
+      <Filter>Testbench Files</Filter>
+    </None>
+    <None Include="execute_tb.sv">
+      <Filter>Testbench Files</Filter>
+    </None>
+    <None Include="execute_tb.txt">
+      <Filter>Testbench Files</Filter>
+    </None>
+    <None Include="fd_tb.sv">
+      <Filter>Testbench Files</Filter>
+    </None>
+    <None Include="fd_tb.txt">
+      <Filter>Testbench Files</Filter>
+    </None>
+    <None Include="fetch_tb.sv">
+      <Filter>Testbench Files</Filter>
+    </None>
+    <None Include="fetch_tb.txt">
+      <Filter>Testbench Files</Filter>
+    </None>
+    <None Include="read.sv">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="read_tb.sv">
+      <Filter>Testbench Files</Filter>
+    </None>
+    <None Include="read_tb.txt">
+      <Filter>Testbench Files</Filter>
+    </None>
+    <None Include="write_tb.sv">
+      <Filter>Testbench Files</Filter>
+    </None>
+    <None Include="write_tb.txt">
+      <Filter>Testbench Files</Filter>
+    </None>
+    <None Include="write.sv">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="sdram_adapter.sv">
+      <Filter>Qsys Files</Filter>
+    </None>
+    <None Include="sdram_writer_hw.tcl">
+      <Filter>Qsys Files</Filter>
+    </None>
+    <None Include="sdram_adapter_hw.tcl">
+      <Filter>Qsys Files</Filter>
+    </None>
+    <None Include="sdram_reader.sv">
+      <Filter>Qsys Files</Filter>
+    </None>
+    <None Include="sdram_reader_hw.tcl">
+      <Filter>Qsys Files</Filter>
+    </None>
+    <None Include="sdram_writer.sv">
+      <Filter>Qsys Files</Filter>
+    </None>
+    <None Include="system.qsys">
+      <Filter>Qsys Files</Filter>
+    </None>
+    <None Include="makevecs.js">
+      <Filter>Testbench Files</Filter>
+    </None>
+    <None Include="div.v">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="udiv.v">
+      <Filter>Generated Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{17f957de-1bb7-43f4-9feb-8c8dd48cee6e}</UniqueIdentifier>
+      <Extensions>sv;v</Extensions>
+    </Filter>
+    <Filter Include="Testbench Files">
+      <UniqueIdentifier>{d2fdfdc2-cf6e-480e-a84d-27e5877345ca}</UniqueIdentifier>
+      <Extensions>js;sv;txt</Extensions>
+    </Filter>
+    <Filter Include="Configuration Files">
+      <UniqueIdentifier>{a9d89161-76d9-46db-ba0c-603f5f12f6f2}</UniqueIdentifier>
+      <Extensions>qpf;qsf;sdc;stp</Extensions>
+    </Filter>
+    <Filter Include="Qsys Files">
+      <UniqueIdentifier>{48ee492b-feb3-443c-a947-3e087abcec00}</UniqueIdentifier>
+      <Extensions>qsys;sv;tcl</Extensions>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{32147f63-42cc-462a-a79e-eb7fd6dc83b0}</UniqueIdentifier>
+      <Extensions>sv;v</Extensions>
+    </Filter>
+  </ItemGroup>
+</Project>

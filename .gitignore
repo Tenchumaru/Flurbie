@@ -28,7 +28,6 @@ system
 *.rpt
 *.sdf
 *.suo
-*.vcxproj.filters
 *.vcxproj.user
 system.cmp
 system.html
