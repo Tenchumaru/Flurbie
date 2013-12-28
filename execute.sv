@@ -7,14 +7,67 @@ module execute(
 
 	// Declare derived signals.
 	regfile_t input_registers;
-	logic has_carry, is_negative, has_overflow, is_zero;
-	regval_t destination_value;
+	logic has_carry, is_negative, has_overflow, is_zero, has_upper_value;
+	regval_t adjusted_value, output_value, upper_value;
+	logic[31:0] quotient, remainder;
+	logic[31:0] uquotient, uremainder;
 
 	// Assign derived signals.
 	assign input_registers= subst_in(ini.pc, registers);
-	assign {has_carry, is_negative, has_overflow, is_zero, destination_value}= compute(input_registers,
-		ini.left_value, ini.right_value, ini.adjustment_value,
-		ini.operation, ini.adjustment_operation);
+	assign adjusted_value= adjust(ini.right_value, ini.adjustment_operation, ini.adjustment_value);
+
+	div the_div(.numer(ini.left_value), .denom(adjusted_value), .quotient, .remain(remainder));
+	udiv the_udiv(.numer(ini.left_value), .denom(adjusted_value), .quotient(uquotient), .remain(uremainder));
+
+	always_comb begin
+		has_carry= 0;
+		has_upper_value= 0;
+		upper_value= 0;
+		case(ini.operation)
+			0: {has_carry, output_value}= ini.left_value + adjusted_value;
+			1: {has_carry, output_value}= ini.left_value + adjusted_value + input_registers[Flags][30];
+			2: {has_carry, output_value}= ini.left_value - adjusted_value;
+			3: {has_carry, output_value}= ini.left_value - adjusted_value - input_registers[Flags][30];
+			4: begin
+				has_upper_value= 1;
+				{upper_value, output_value}= $signed(ini.left_value) * $signed(adjusted_value);
+			end
+			5: begin
+				has_upper_value= 1;
+				{upper_value, output_value}= ini.left_value * adjusted_value;
+			end
+			6: begin
+				has_upper_value= 1;
+				{upper_value, output_value}= {quotient, remainder};
+			end
+			7: begin
+				has_upper_value= 1;
+				{upper_value, output_value}= {uquotient, uremainder};
+			end
+			8: output_value= ini.left_value & adjusted_value;
+			9: output_value= ~(ini.left_value & adjusted_value);
+			10: output_value= ini.left_value | adjusted_value;
+			11: output_value= ~(ini.left_value | adjusted_value);
+			12: output_value= ini.left_value ^ adjusted_value;
+			13: output_value= ~(ini.left_value ^ adjusted_value);
+			14: output_value= ini.left_value;
+			15: output_value= ini.adjustment_value;
+		endcase
+		is_negative= output_value[31];
+		case(ini.operation)
+			0, 1:
+				has_overflow= (!ini.left_value[31] && !adjusted_value[31] && output_value[31])
+					|| (ini.left_value[31] && adjusted_value[31] && !output_value[31]);
+			2, 3:
+				has_overflow= (ini.left_value[31] && !adjusted_value[31] && !output_value[31])
+					|| (!ini.left_value[31] && adjusted_value[31] && output_value[31]);
+			6, 7:
+				has_overflow= adjusted_value == 0;
+			default:
+				has_overflow= 0;
+		endcase
+		is_zero= ini.operation == 15 ? ini.left_value == ini.right_value : output_value == 0;
+	end
 
 	always_ff@(posedge clock, negedge reset_n) begin
 		if(!reset_n) begin
@@ -26,19 +79,21 @@ module execute(
 			outi.is_valid <= 1;
 			outi.pc <= ini.pc;
 			if(ini.is_writing_memory) begin
-				if(ini.operation != 15 || has_carry) begin
-					outi.destination_register <= ini.address_register;
-					outi.is_writing_memory <= 1;
-				end else begin
+				if(ini.operation == 15 && !is_zero) begin
 					outi.destination_register <= 0;
 					outi.is_writing_memory <= 0;
+				end else begin
+					outi.destination_register <= ini.address_register;
+					outi.is_writing_memory <= 1;
 				end
 			end else begin
 				outi.destination_register <= ini.destination_register;
 				outi.is_writing_memory <= 0;
 			end
 			outi.flags <= {has_carry, is_negative, has_overflow, is_zero};
-			outi.destination_value <= destination_value;
+			outi.destination_value <= output_value;
+			outi.has_upper_value <= has_upper_value;
+			outi.upper_value <= upper_value;
 			outi.adjustment_value <= ini.operation != 15 ? ini.adjustment_value : 0;
 			outi.has_flushed <= ini.has_flushed;
 		end else begin
@@ -62,48 +117,4 @@ function regval_t adjust(regval_t value, logic[1:0] op, regval_t adjustment_valu
 		ArithmeticRight:
 			return $signed(value) >>> adjustment_value[4:0];
 	endcase
-endfunction
-
-function logic[35:0] compute(regfile_t registers, regval_t left_value, right_value, adjustment_value, logic[3:0] operation, logic[1:0] adjustment_operation);
-
-	regval_t adjusted_value, output_value;
-	logic has_carry, is_negative, has_overflow, is_zero;
-
-	adjusted_value= adjust(right_value, adjustment_operation, adjustment_value);
-	has_carry= 0;
-	case(operation)
-		0: {has_carry, output_value}= left_value + adjusted_value;
-		1: {has_carry, output_value}= left_value + adjusted_value + registers[Flags][30];
-		2: {has_carry, output_value}= left_value - adjusted_value;
-		3: {has_carry, output_value}= left_value - adjusted_value - registers[Flags][30];
-		// TODO:  consider targeting two registers with the low and high parts
-		// of the product.
-		4: output_value= $signed(left_value) * $signed(adjusted_value);
-		5: output_value= left_value * adjusted_value;
-		// TODO:  consider using a megafunction to get the quotient and
-		// remainder at the same time.  That will require targeting two registers.
-		6: output_value= adjusted_value ? $signed($signed(left_value) / $signed(adjusted_value)) : '1;
-		7: output_value= adjusted_value ? left_value / adjusted_value : '1;
-		8: output_value= left_value & adjusted_value;
-		9: output_value= ~(left_value & adjusted_value);
-		10: output_value= left_value | adjusted_value;
-		11: output_value= ~(left_value | adjusted_value);
-		12: output_value= left_value ^ adjusted_value;
-		13: output_value= ~(left_value ^ adjusted_value);
-		14: output_value= left_value;
-		15: begin
-			has_carry= left_value == right_value;
-			output_value= adjustment_value;
-		end
-	endcase
-	is_negative= output_value[31];
-	// TODO:  overflow is incorrect for multiplication and division.
-	has_overflow= (operation[1] && left_value[31] && !adjusted_value[31] && !output_value[31])
-		|| (!operation[1] && !left_value[31] && !adjusted_value[31] && output_value[31])
-		|| (operation[1] && !left_value[31] && adjusted_value[31] && output_value[31])
-		|| (!operation[1] && left_value[31] && adjusted_value[31] && !output_value[31]);
-	is_zero= !output_value;
-
-	return {has_carry, is_negative, has_overflow, is_zero, output_value};
-
 endfunction

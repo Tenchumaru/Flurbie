@@ -15,13 +15,13 @@
     <None Include="cpu.qpf" />
     <None Include="cpu.qsf" />
     <None Include="cpu.sdc" />
-    <None Include="cpu.srf" />
     <None Include="cpu.stp" />
     <None Include="cpu.sv" />
     <None Include="cpu.txt" />
     <None Include="decode.sv" />
     <None Include="decode_tb.sv" />
     <None Include="decode_tb.txt" />
+    <None Include="div.v" />
     <None Include="execute.sv" />
     <None Include="execute_tb.sv" />
     <None Include="execute_tb.txt" />
@@ -44,6 +44,7 @@
     <None Include="sdram_writer.sv" />
     <None Include="sdram_writer_hw.tcl" />
     <None Include="system.qsys" />
+    <None Include="udiv.v" />
     <None Include="write.sv" />
     <None Include="write_tb.sv" />
     <None Include="write_tb.txt" />

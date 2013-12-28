@@ -54,6 +54,8 @@ set_global_assignment -name SYSTEMVERILOG_FILE decode.sv
 set_global_assignment -name SYSTEMVERILOG_FILE read.sv
 set_global_assignment -name SYSTEMVERILOG_FILE execute.sv
 set_global_assignment -name SYSTEMVERILOG_FILE write.sv
+set_global_assignment -name QIP_FILE div.qip
+set_global_assignment -name QIP_FILE udiv.qip
 set_global_assignment -name QIP_FILE system/synthesis/system.qip
 set_global_assignment -name SMART_RECOMPILE ON
 

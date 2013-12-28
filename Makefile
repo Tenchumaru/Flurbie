@@ -15,8 +15,8 @@ CP=COPY /Y
 ###############################################################################
 
 PROJECT=cpu
-ASSIGNMENT_FILES=cpu.qpf cpu.qsf
 SOURCE_FILES=cpu.sv registers.sv core.sv fetch.sv decode.sv read.sv execute.sv write.sv
+ASSIGNMENT_FILES=$(PROJECT).qpf $(PROJECT).qsf
 OUTPUT_DIR=output_files
 
 ###############################################################################
@@ -59,6 +59,9 @@ EDA_ARGS=$(IPC_ARGS) --smart --read_settings_files=off --write_settings_files=of
 ###############################################################################
 # Target implementations
 ###############################################################################
+
+#$(PROJECT).qsf: $(PROJECT).vcxproj
+#	cscript ..\update_qsf.js $** $@
 
 "$(Configuration)/stp": $(ASSIGNMENT_FILES) $(SOURCE_FILES)
 !IF "$(Configuration)" == "Map Only"

@@ -94,23 +94,23 @@ endinterface
 
 interface i_execute_to_write();
 
-	regval_t pc, adjustment_value, destination_value;
+	regval_t pc, adjustment_value, destination_value, upper_value;
 	regind_t destination_register;
 	logic[3:0] flags;
-	logic hold, has_flushed, is_valid, is_writing_memory;
+	logic hold, has_flushed, is_valid, is_writing_memory, has_upper_value;
 
 	modport execute_out(
 		input hold,
-		output pc, adjustment_value, destination_value,
+		output pc, adjustment_value, destination_value, upper_value,
 		output destination_register,
 		output flags,
-		output has_flushed, is_valid, is_writing_memory
+		output has_flushed, is_valid, is_writing_memory, has_upper_value
 	);
 	modport write_in(
-		input pc, adjustment_value, destination_value,
+		input pc, adjustment_value, destination_value, upper_value,
 		input destination_register,
 		input flags,
-		input has_flushed, is_valid, is_writing_memory,
+		input has_flushed, is_valid, is_writing_memory, has_upper_value,
 		output hold
 	);
 
