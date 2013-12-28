@@ -11,6 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <None Include="arithmetic.s" />
+    <None Include="load_store.s" />
     <None Include="Makefile" />
     <None Include="parser.y" />
     <None Include="scanner.l" />
