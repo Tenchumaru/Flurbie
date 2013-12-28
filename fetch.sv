@@ -26,10 +26,13 @@ module fetch(
 		if(!reset_n) begin
 			state <= IsActive;
 			outi.instruction <= Nop;
+			outi.pc <= 0;
 		end else begin
 			state <= next_state;
-			if(!outi.hold)
+			if(!outi.hold) begin
 				outi.instruction <= next_instruction;
+				outi.pc <= pc;
+			end
 		end
 	end : state_register
 

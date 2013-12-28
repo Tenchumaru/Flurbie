@@ -116,7 +116,7 @@ module decode(
 		// Don't do anything.
 		end else begin
 			outi.is_valid <= is_valid;
-			outi.pc <= registers[PC];
+			outi.pc <= ini.pc;
 			outi.operation <= operation;
 			outi.destination_register <= destination_register;
 			outi.left_register <= left_register;

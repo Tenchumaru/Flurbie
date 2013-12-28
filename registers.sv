@@ -22,15 +22,15 @@ parameter regval_t Nop= 32'h80000000;
 interface i_fetch_to_decode();
 
 	logic hold, is_pc_changing;
-	regval_t instruction;
+	regval_t pc, instruction;
 
 	modport fetch_out(
 		input hold, is_pc_changing,
-		output instruction
+		output pc, instruction
 	);
 
 	modport decode_in(
-		input instruction,
+		input pc, instruction,
 		output hold, is_pc_changing
 	);
 
