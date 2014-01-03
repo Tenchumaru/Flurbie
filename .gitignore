@@ -12,8 +12,9 @@
 *.la
 *.a
 
-Map Only
-Map With Signal Tap
+Debug
+Pre-debug
+Pre-release
 Release
 db
 greybox_tmp

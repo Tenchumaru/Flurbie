@@ -25,7 +25,7 @@ OUTPUT_DIR=output_files
 # clean: remove output files and database
 ###############################################################################
 
-!IF "$(Configuration)" == "Release"
+!IF "$(Configuration)" == "Debug" || "$(Configuration)" == "Release"
 all: map fit asm sta eda
 !ELSE
 all: map
@@ -65,13 +65,16 @@ $(PROJECT).qsf: $(PROJECT).vcxproj
 	cscript ..\update_qsf.js $** $@
 
 "$(Configuration)/stp": $(ASSIGNMENT_FILES) $(SOURCE_FILES)
-!IF "$(Configuration)" == "Map Only"
+!IF "$(Configuration)" == "Pre-release" || "$(Configuration)" == "Release"
 	quartus_stp $(PROJECT) --signaltap --stp_file $(PROJECT).stp --disable
 !ELSE
 	quartus_stp $(PROJECT) --signaltap --stp_file $(PROJECT).stp --enable
 !ENDIF
 	ECHO stp > $@
-!IF "$(Configuration)" == "Map With Signal Tap"
+!IF "$(Configuration)" == "Pre-debug"
+	IF NOT EXIST Debug MD Debug
+	ECHO stp > Debug\stp
+!ELSEIF "$(Configuration)" == "Pre-release"
 	IF NOT EXIST Release MD Release
 	ECHO stp > Release\stp
 !ENDIF

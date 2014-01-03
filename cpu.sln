@@ -7,21 +7,26 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tools", "assembler\tools.vc
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Map Only|Win32 = Map Only|Win32
-		Map With Signal Tap|Win32 = Map With Signal Tap|Win32
+		Debug|Win32 = Debug|Win32
+		Pre-debug|Win32 = Pre-debug|Win32
+		Pre-release|Win32 = Pre-release|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{71438330-4CF7-4989-9DA7-5ED17ED70CDF}.Map Only|Win32.ActiveCfg = Map Only|Win32
-		{71438330-4CF7-4989-9DA7-5ED17ED70CDF}.Map Only|Win32.Build.0 = Map Only|Win32
-		{71438330-4CF7-4989-9DA7-5ED17ED70CDF}.Map With Signal Tap|Win32.ActiveCfg = Map With Signal Tap|Win32
-		{71438330-4CF7-4989-9DA7-5ED17ED70CDF}.Map With Signal Tap|Win32.Build.0 = Map With Signal Tap|Win32
+		{71438330-4CF7-4989-9DA7-5ED17ED70CDF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{71438330-4CF7-4989-9DA7-5ED17ED70CDF}.Debug|Win32.Build.0 = Debug|Win32
+		{71438330-4CF7-4989-9DA7-5ED17ED70CDF}.Pre-debug|Win32.ActiveCfg = Pre-debug|Win32
+		{71438330-4CF7-4989-9DA7-5ED17ED70CDF}.Pre-debug|Win32.Build.0 = Pre-debug|Win32
+		{71438330-4CF7-4989-9DA7-5ED17ED70CDF}.Pre-release|Win32.ActiveCfg = Pre-release|Win32
+		{71438330-4CF7-4989-9DA7-5ED17ED70CDF}.Pre-release|Win32.Build.0 = Pre-release|Win32
 		{71438330-4CF7-4989-9DA7-5ED17ED70CDF}.Release|Win32.ActiveCfg = Release|Win32
 		{71438330-4CF7-4989-9DA7-5ED17ED70CDF}.Release|Win32.Build.0 = Release|Win32
-		{DDF4229D-EECE-4C39-BC4E-8D2CF91FA71F}.Map Only|Win32.ActiveCfg = Debug|Win32
-		{DDF4229D-EECE-4C39-BC4E-8D2CF91FA71F}.Map Only|Win32.Build.0 = Debug|Win32
-		{DDF4229D-EECE-4C39-BC4E-8D2CF91FA71F}.Map With Signal Tap|Win32.ActiveCfg = Debug|Win32
-		{DDF4229D-EECE-4C39-BC4E-8D2CF91FA71F}.Map With Signal Tap|Win32.Build.0 = Debug|Win32
+		{DDF4229D-EECE-4C39-BC4E-8D2CF91FA71F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DDF4229D-EECE-4C39-BC4E-8D2CF91FA71F}.Debug|Win32.Build.0 = Debug|Win32
+		{DDF4229D-EECE-4C39-BC4E-8D2CF91FA71F}.Pre-debug|Win32.ActiveCfg = Debug|Win32
+		{DDF4229D-EECE-4C39-BC4E-8D2CF91FA71F}.Pre-debug|Win32.Build.0 = Debug|Win32
+		{DDF4229D-EECE-4C39-BC4E-8D2CF91FA71F}.Pre-release|Win32.ActiveCfg = Release|Win32
+		{DDF4229D-EECE-4C39-BC4E-8D2CF91FA71F}.Pre-release|Win32.Build.0 = Release|Win32
 		{DDF4229D-EECE-4C39-BC4E-8D2CF91FA71F}.Release|Win32.ActiveCfg = Release|Win32
 		{DDF4229D-EECE-4C39-BC4E-8D2CF91FA71F}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
