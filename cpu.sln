@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cpu", "cpu.vcxproj", "{71438330-4CF7-4989-9DA7-5ED17ED70CDF}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tools", "assembler\tools.vcxproj", "{DDF4229D-EECE-4C39-BC4E-8D2CF91FA71F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tools", "tools\tools.vcxproj", "{DDF4229D-EECE-4C39-BC4E-8D2CF91FA71F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
