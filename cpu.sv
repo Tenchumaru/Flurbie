@@ -1,38 +1,38 @@
 module cpu(
 	//////////// CLOCK //////////
-	input logic CLOCK_50,
-	//
-	////////////// LED //////////
-	//output logic[7:0] LED,
+	input logic CLOCK_50
+
+	//////////// LED //////////
+	, output logic[7:0] LED
 
 	//////////// KEY //////////
-	input logic[1:0] KEY,
+	, input logic[1:0] KEY
 
 	//////////// SW //////////
-	input logic[3:0] SW,
+	, input logic[3:0] SW
 
 	//////////// SDRAM //////////
-	output logic[12:0] DRAM_ADDR,
-	output logic[1:0] DRAM_BA,
-	output logic DRAM_CAS_N,
-	output logic DRAM_CKE,
-	output logic DRAM_CLK,
-	output logic DRAM_CS_N,
-	inout logic[15:0] DRAM_DQ,
-	output logic[1:0] DRAM_DQM,
-	output logic DRAM_RAS_N,
-	output logic DRAM_WE_N//,
+	, output logic[12:0] DRAM_ADDR
+	, output logic[1:0] DRAM_BA
+	, output logic DRAM_CAS_N
+	, output logic DRAM_CKE
+	, output logic DRAM_CLK
+	, output logic DRAM_CS_N
+	, inout logic[15:0] DRAM_DQ
+	, output logic[1:0] DRAM_DQM
+	, output logic DRAM_RAS_N
+	, output logic DRAM_WE_N
 //
-//	//////////// EEPROM //////////
-//	output logic I2C_SCLK,
-//	inout logic I2C_SDAT;
+////////////// EEPROM //////////
+//, output logic I2C_SCLK
+//, inout logic I2C_SDAT
 );
 
 	logic clock, reset_n;
 
 	assign clock= CLOCK_50;
-	assign reset_n= KEY[0];
-	assign DRAM_CLK= clock;
+	assign reset_n= KEY[0] & KEY[1];
+	assign LED= ia[7:0];
 
 	logic[24:0] instruction_read_address;
 	logic[31:0] instruction_read_data;
@@ -69,6 +69,7 @@ module cpu(
 		.write_data_write_n        (write_data_write_n),        //            .write_n
 		.write_data_write_address  (write_data_write_address)   //            .write_address
 	);
+	assign DRAM_CLK= clock;
 
 	logic ia_enable, iv_valid, da_in_enable, dv_in_valid, da_out_enable, dv_out_valid;
 	regval_t ia, iv, da_in, dv_in, da_out, dv_out;

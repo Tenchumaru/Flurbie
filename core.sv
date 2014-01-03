@@ -12,50 +12,66 @@ module core(
 );
 
 	regfile_t registers;
-	regval_t next_pc;
-	logic has_flushed;
 
+	i_flow_control flow_ftd(.clock, .reset_n);
+	i_flow_control flow_dtr(.clock, .reset_n);
+	i_flow_control flow_rte(.clock, .reset_n);
+	i_flow_control flow_etw(.clock, .reset_n);
 	i_fetch_to_decode the_ftd();
+	i_decode_to_read the_dtr();
+	i_read_to_execute the_rte();
+	i_execute_to_write the_etw();
+	i_write_to_fetch the_wtf();
 
 	fetch the_fetch(
-		.reset_n, .clock, .has_flushed,
-		.pc(registers[PC]), .data(iv), .data_valid(iv_valid),
-		.address(ia), .address_enable(ia_enable),
-		.next_pc, .outi(the_ftd.fetch_out)
+		.registers,
+		.address(ia),
+		.address_enable(ia_enable),
+		.data(iv),
+		.data_valid(iv_valid),
+		.flow_out(flow_ftd.out),
+		.ini(the_wtf.fetch_in),
+		.outi(the_ftd.fetch_out)
 	);
 
-	i_decode_to_read the_dtr();
-
 	decode the_decode(
-		.reset_n, .clock,
-		.registers, .ini(the_ftd.decode_in),
+		.registers,
+		.flow_in(flow_ftd.in),
+		.flow_out(flow_dtr.out),
+		.ini(the_ftd.decode_in),
 		.outi(the_dtr.decode_out)
 	);
 
-	i_read_to_execute the_rte();
-
 	read the_read(
-		.reset_n, .clock,
-		.data(dv_in), .data_valid(dv_in_valid),
-		.registers, .ini(the_dtr.read_in),
-		.address_enable(da_in_enable), .address(da_in),
+		.registers,
+		.address(da_in),
+		.address_enable(da_in_enable),
+		.data(dv_in),
+		.data_valid(dv_in_valid),
+		.flow_in(flow_dtr.in),
+		.flow_out(flow_rte.out),
+		.ini(the_dtr.read_in),
 		.outi(the_rte.read_out)
 	);
 
-	i_execute_to_write the_etw();
-
 	execute the_execute(
-		.reset_n, .clock,
-		.registers, .ini(the_rte.execute_in),
+		.registers,
+		.flow_in(flow_rte.in),
+		.flow_out(flow_etw.out),
+		.ini(the_rte.execute_in),
 		.outi(the_etw.execute_out)
 	);
 
 	write the_write(
-		.reset_n, .clock, .data_valid(dv_out_valid),
-		.input_registers(registers), .next_pc, .ini(the_etw.write_in),
-		.address(da_out), .data(dv_out),
-		.has_flushed, .address_enable(da_out_enable),
-		.output_registers(registers)
+		.input_registers(registers),
+		.output_registers(registers),
+		.address(da_out),
+		.address_enable(da_out_enable),
+		.data(dv_out),
+		.data_valid(dv_out_valid),
+		.flow_in(flow_etw.in),
+		.ini(the_etw.write_in),
+		.outi(the_wtf.write_out)
 	);
 
 endmodule

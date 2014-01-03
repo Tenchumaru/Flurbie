@@ -1,52 +1,58 @@
 module fetch(
-	input logic reset_n, clock, has_flushed, data_valid,
-	input regval_t pc, data,
+	input regfile_t registers,
 	output logic address_enable,
-	output regval_t address, next_pc,
+	output regval_t address,
+	input logic data_valid,
+	input regval_t data,
+	i_flow_control.out flow_out,
+	i_write_to_fetch.fetch_in ini,
 	i_fetch_to_decode.fetch_out outi
 );
 
-	typedef enum logic {IsActive, IsFlushing} state_t;
-
-	state_t state, next_state;
-	regval_t next_instruction, next_pc_increment;
-
 	// next state logic
+	logic is_flushing, next_is_flushing, next_is_valid;
+	regval_t next_instruction, next_pc;
 	always_comb begin : next_state_logic
-		case(state)
-			IsActive: next_state= outi.is_pc_changing ? IsFlushing : IsActive;
-			IsFlushing: next_state= outi.is_pc_changing || !has_flushed ? IsFlushing : IsActive;
-			default: next_state= IsActive;
-		endcase
-		next_instruction= next_state == IsActive && data_valid ? data : Nop;
+		next_is_flushing= outi.is_pc_changing || (is_flushing && !ini.has_flushed);
+		// Fetch needs to wait for memory to respond.
+		next_is_valid= data_valid;
+		// TODO:  I need a way to store the data and free the bus if
+		// flow_in.hold is active for a long time.  I need such a mechanism
+		// here and in the read and write stages.
+		next_instruction= data;
+		next_pc= registers[PC];
 	end : next_state_logic
 
 	// state register
-	always_ff@(posedge clock, negedge reset_n) begin : state_register
-		if(!reset_n) begin
-			state <= IsActive;
+	always_ff@(posedge flow_out.clock, negedge flow_out.reset_n) begin : state_register
+		if(!flow_out.reset_n) begin
+			is_flushing <= 0;
+			flow_out.is_valid <= 0;
 			outi.instruction <= Nop;
 			outi.pc <= 0;
 		end else begin
-			state <= next_state;
-			if(!outi.hold) begin
+			is_flushing <= next_is_flushing;
+			if(!flow_out.hold) begin
+				flow_out.is_valid <= next_is_valid;
 				outi.instruction <= next_instruction;
-				outi.pc <= pc;
+				outi.pc <= next_pc;
 			end
 		end
 	end : state_register
 
 	// output logic
 	always_comb begin : output_logic
-		next_pc_increment= next_state == IsActive && data_valid && !outi.hold ? 4 : 0;
-		if(!reset_n) begin
+		if(!flow_out.reset_n) begin
 			address_enable= 1;
 			address= 0;
-			next_pc= 0;
+			ini.next_pc= 0;
 		end else begin
-			address_enable= next_state == IsActive && !outi.hold;
-			address= pc;
-			next_pc= pc + next_pc_increment;
+			address_enable= !next_is_flushing && !flow_out.hold;
+			address= next_pc;
+			if(data_valid && !next_is_flushing && !flow_out.hold ? 4 : 0)
+				ini.next_pc= next_pc + 4;
+			else
+				ini.next_pc= next_pc;
 		end
 	end : output_logic
 

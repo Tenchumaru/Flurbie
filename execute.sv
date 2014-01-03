@@ -1,6 +1,7 @@
 module execute(
-	input logic reset_n, clock,
 	input regfile_t registers,
+	i_flow_control.in flow_in,
+	i_flow_control.out flow_out,
 	i_read_to_execute.execute_in ini,
 	i_execute_to_write.execute_out outi
 );
@@ -69,14 +70,22 @@ module execute(
 		is_zero= ini.operation == 15 ? ini.left_value == ini.right_value : output_value == 0;
 	end
 
-	always_ff@(posedge clock, negedge reset_n) begin
-		if(!reset_n) begin
-			outi.is_valid <= 0;
+	// next state logic
+	logic is_delaying, next_is_valid;
+	always_comb begin : next_state_logic
+		// Execute always completes in one cycle.
+		// TODO:  this isn't true for divide and modulo operations.
+		is_delaying= 0;
+		next_is_valid= !is_delaying && flow_in.is_valid;
+	end : next_state_logic
+
+	// state register
+	always_ff@(negedge flow_in.reset_n, posedge flow_in.clock) begin : state_register
+		if(!flow_in.reset_n) begin
+			flow_out.is_valid <= 0;
 			outi.has_flushed <= 0;
-		end else if(outi.hold) begin
-		// Don't do anything.
-		end else if(ini.is_valid) begin
-			outi.is_valid <= 1;
+		end else if(!flow_out.hold) begin
+			flow_out.is_valid <= next_is_valid;
 			outi.pc <= ini.pc;
 			if(ini.is_writing_memory) begin
 				if(ini.operation == 15 && !is_zero) begin
@@ -96,13 +105,13 @@ module execute(
 			outi.upper_value <= upper_value;
 			outi.adjustment_value <= ini.operation != 15 ? ini.adjustment_value : 0;
 			outi.has_flushed <= ini.has_flushed;
-		end else begin
-			outi.is_valid <= 0;
-			outi.has_flushed <= ini.has_flushed;
 		end
-	end
+	end : state_register
 
-	assign ini.hold= reset_n && outi.hold;
+	// output logic
+	always_comb begin : output_logic
+		flow_in.hold= (flow_out.hold || is_delaying) && flow_in.is_valid;
+	end : output_logic
 
 endmodule
 

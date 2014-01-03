@@ -1,11 +1,12 @@
 module write(
-	input logic reset_n, clock, data_valid,
-	input regfile_t input_registers,
-	input regval_t next_pc,
-	i_execute_to_write.write_in ini,
+	output logic address_enable,
 	output regval_t address, data,
-	output logic has_flushed, address_enable,
-	output regfile_t output_registers
+	input logic data_valid,
+	input regfile_t input_registers,
+	output regfile_t output_registers,
+	i_flow_control.in flow_in,
+	i_execute_to_write.write_in ini,
+	i_write_to_fetch.write_out outi
 );
 
 	regfile_t registers;
@@ -18,9 +19,12 @@ module write(
 					? ini.destination_value
 					: {input_registers[i][31], ini.flags, input_registers[i][26:0]};
 			end else if(i == PC) begin
-				assign registers[i]= i == ini.destination_register && !ini.is_writing_memory
-					? ini.destination_value
-					: ini.pc;
+				// Since the output PC register gets the PC computed in the
+				// next state logic because of the subst_in invocation, assign
+				// the PC that was active at the time the current instruction
+				// was fetched for purposes of computing a write address, used
+				// in the output logic below.
+				assign registers[i]= ini.pc;
 			end else if(i == 0) begin
 				assign registers[i]= 0;
 			end else begin
@@ -33,18 +37,28 @@ module write(
 		end
 	endgenerate
 
+	// next state logic
 	regval_t pc;
+	logic is_writing_memory, is_delaying;
+	always_comb begin : next_state_logic
+		pc= flow_in.is_valid && ini.destination_register == PC && !ini.is_writing_memory
+			? ini.destination_value
+			: outi.next_pc;
+		is_writing_memory= flow_in.is_valid && ini.is_writing_memory;
+		// Write needs to wait for memory to respond.
+		is_delaying= is_writing_memory && !data_valid;
+	end : next_state_logic
 
-	// If appropriate, clock next_pc instead of ini.pc into the output registers.
-	assign pc= ini.is_valid && ini.destination_register == PC && !ini.is_writing_memory ? ini.destination_value : next_pc;
-
-	always_ff@(posedge clock, negedge reset_n) begin : state_register
-		if(!reset_n) begin
-			has_flushed <= 0;
+	// state register
+	always_ff@(negedge flow_in.reset_n, posedge flow_in.clock) begin : state_register
+		if(!flow_in.reset_n) begin
+			outi.has_flushed <= 0;
 			output_registers <= ZeroRegFile;
 		end else begin
-			has_flushed <= ini.has_flushed;
-			if(ini.is_valid) begin
+			if(flow_in.is_valid) begin
+				outi.has_flushed <= ini.has_flushed;
+				// TODO:  can I remove the subst_in invocation and put the PC
+				// assignment outside of the innermost if block?
 				output_registers <= subst_in(pc, registers);
 			end else begin
 				output_registers[PC] <= pc;
@@ -52,9 +66,12 @@ module write(
 		end
 	end : state_register
 
-	assign ini.hold= reset_n && address_enable && !data_valid;
-	assign address_enable= reset_n && ini.is_valid && ini.is_writing_memory;
-	assign address= registers[ini.destination_register] + ini.adjustment_value;
-	assign data= ini.destination_value;
+	// output logic
+	always_comb begin : output_logic
+		flow_in.hold= flow_in.reset_n && is_delaying && flow_in.is_valid;
+		address_enable= is_writing_memory;
+		address= registers[ini.destination_register] + ini.adjustment_value;
+		data= ini.destination_value;
+	end : output_logic
 
 endmodule
