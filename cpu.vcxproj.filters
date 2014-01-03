@@ -102,17 +102,29 @@
     <None Include="makevecs.js">
       <Filter>Testbench Files</Filter>
     </None>
+    <None Include="system\synthesis\system.qip">
+      <Filter>Qsys Files</Filter>
+    </None>
+    <None Include="udiv.qip">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="div.qip">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="udiv.v">
+      <Filter>Generated Files</Filter>
+    </None>
     <None Include="div.v">
       <Filter>Generated Files</Filter>
     </None>
-    <None Include="udiv.v">
+    <None Include="system\synthesis\system.v">
       <Filter>Generated Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
       <UniqueIdentifier>{17f957de-1bb7-43f4-9feb-8c8dd48cee6e}</UniqueIdentifier>
-      <Extensions>sv;v</Extensions>
+      <Extensions>qip;sv</Extensions>
     </Filter>
     <Filter Include="Testbench Files">
       <UniqueIdentifier>{d2fdfdc2-cf6e-480e-a84d-27e5877345ca}</UniqueIdentifier>
@@ -124,11 +136,11 @@
     </Filter>
     <Filter Include="Qsys Files">
       <UniqueIdentifier>{48ee492b-feb3-443c-a947-3e087abcec00}</UniqueIdentifier>
-      <Extensions>qsys;sv;tcl</Extensions>
+      <Extensions>qip;qsys;sv;tcl</Extensions>
     </Filter>
     <Filter Include="Generated Files">
       <UniqueIdentifier>{32147f63-42cc-462a-a79e-eb7fd6dc83b0}</UniqueIdentifier>
-      <Extensions>sv;v</Extensions>
+      <Extensions>v</Extensions>
     </Filter>
   </ItemGroup>
 </Project>

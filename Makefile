@@ -14,8 +14,7 @@ CP=COPY /Y
 # (.qsf), the list of source files used, and the output directory.
 ###############################################################################
 
-PROJECT=cpu
-SOURCE_FILES=cpu.sv registers.sv core.sv fetch.sv decode.sv read.sv execute.sv write.sv
+!INCLUDE source_files.inc
 ASSIGNMENT_FILES=$(PROJECT).qpf $(PROJECT).qsf
 OUTPUT_DIR=output_files
 
@@ -26,15 +25,16 @@ OUTPUT_DIR=output_files
 # clean: remove output files and database
 ###############################################################################
 
-!IF "$(Configuration)" == "Map Only"
-all: map
-!ELSE
+!IF "$(Configuration)" == "Release"
 all: map fit asm sta eda
+!ELSE
+all: map
 !ENDIF
 
 clean:
 	IF EXIST $(OUTPUT_DIR) $(RMRF) $(OUTPUT_DIR)
 	IF EXIST db $(RMRF) db
+	IF EXIST greybox_tmp $(RMRF) greybox_tmp
 	IF EXIST incremental_db $(RMRF) incremental_db
 	IF EXIST "$(Configuration)" $(RM) "$(Configuration)"
 
@@ -60,8 +60,9 @@ EDA_ARGS=$(IPC_ARGS) --smart --read_settings_files=off --write_settings_files=of
 # Target implementations
 ###############################################################################
 
-#$(PROJECT).qsf: $(PROJECT).vcxproj
-#	cscript ..\update_qsf.js $** $@
+$(PROJECT).qsf: $(PROJECT).vcxproj
+	COPY /Y $@ "$(Configuration)"
+	cscript ..\update_qsf.js $** $@
 
 "$(Configuration)/stp": $(ASSIGNMENT_FILES) $(SOURCE_FILES)
 !IF "$(Configuration)" == "Map Only"
@@ -69,7 +70,11 @@ EDA_ARGS=$(IPC_ARGS) --smart --read_settings_files=off --write_settings_files=of
 !ELSE
 	quartus_stp $(PROJECT) --signaltap --stp_file $(PROJECT).stp --enable
 !ENDIF
-	echo stp > $@
+	ECHO stp > $@
+!IF "$(Configuration)" == "Map With Signal Tap"
+	IF NOT EXIST Release MD Release
+	ECHO stp > Release\stp
+!ENDIF
 
 $(OUTPUT_DIR)/$(PROJECT).map.rpt: "$(Configuration)/stp"
 	quartus_map $(MAP_ARGS) $(PROJECT)

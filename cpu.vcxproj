@@ -5,6 +5,10 @@
       <Configuration>Map Only</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Map With Signal Tap|Win32">
+      <Configuration>Map With Signal Tap</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
@@ -21,6 +25,7 @@
     <None Include="decode.sv" />
     <None Include="decode_tb.sv" />
     <None Include="decode_tb.txt" />
+    <None Include="div.qip" />
     <None Include="div.v" />
     <None Include="execute.sv" />
     <None Include="execute_tb.sv" />
@@ -44,6 +49,9 @@
     <None Include="sdram_writer.sv" />
     <None Include="sdram_writer_hw.tcl" />
     <None Include="system.qsys" />
+    <None Include="system\synthesis\system.qip" />
+    <None Include="system\synthesis\system.v" />
+    <None Include="udiv.qip" />
     <None Include="udiv.v" />
     <None Include="write.sv" />
     <None Include="write_tb.sv" />
@@ -59,6 +67,11 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <OutDir>$(ProjectDir)output_files\</OutDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Map With Signal Tap|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <OutDir>$(ProjectDir)output_files\</OutDir>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Makefile</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -70,22 +83,33 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Map Only|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Map With Signal Tap|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Map Only|Win32'">
-    <NMakeBuildCommandLine>nmake -nologo "Configuration=$(Configuration)"</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)"</NMakeBuildCommandLine>
     <NMakeCleanCommandLine>nmake -nologo "Configuration=$(Configuration)" clean</NMakeCleanCommandLine>
-    <NMakeReBuildCommandLine>nmake -nologo "Configuration=$(Configuration)"</NMakeReBuildCommandLine>
+    <NMakeReBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)"</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <ExecutablePath>C:\altera\13.1\quartus\bin64;C:\Users\Chris\Documents\bin;$(ExecutablePath)</ExecutablePath>
+    <NMakeOutput>$(OutDir)$(ProjectName).sof</NMakeOutput>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Map With Signal Tap|Win32'">
+    <NMakeBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)"</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>nmake -nologo "Configuration=$(Configuration)" clean</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)"</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <ExecutablePath>C:\altera\13.1\quartus\bin64;C:\Users\Chris\Documents\bin;$(ExecutablePath)</ExecutablePath>
     <NMakeOutput>$(OutDir)$(ProjectName).sof</NMakeOutput>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <NMakeBuildCommandLine>nmake -nologo "Configuration=$(Configuration)"</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)"</NMakeBuildCommandLine>
     <NMakeCleanCommandLine>nmake -nologo "Configuration=$(Configuration)" clean</NMakeCleanCommandLine>
-    <NMakeReBuildCommandLine>nmake -nologo "Configuration=$(Configuration)"</NMakeReBuildCommandLine>
+    <NMakeReBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)"</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <ExecutablePath>C:\altera\13.1\quartus\bin64;C:\Users\Chris\Documents\bin;$(ExecutablePath)</ExecutablePath>
     <NMakeOutput>$(OutDir)$(ProjectName).sof</NMakeOutput>

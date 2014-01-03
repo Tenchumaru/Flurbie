@@ -13,6 +13,7 @@
 *.a
 
 Map Only
+Map With Signal Tap
 Release
 db
 greybox_tmp
@@ -29,6 +30,7 @@ system
 *.sdf
 *.suo
 *.vcxproj.user
+source_files.inc
 system.cmp
 system.html
 system.sopcinfo
