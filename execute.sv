@@ -39,11 +39,11 @@ module execute(
 			end
 			6: begin
 				has_upper_value= 1;
-				{upper_value, output_value}= {quotient, remainder};
+				{upper_value, output_value}= {remainder, quotient};
 			end
 			7: begin
 				has_upper_value= 1;
-				{upper_value, output_value}= {uquotient, uremainder};
+				{upper_value, output_value}= {uremainder, uquotient};
 			end
 			8: output_value= ini.left_value & adjusted_value;
 			9: output_value= ~(ini.left_value & adjusted_value);
@@ -71,11 +71,16 @@ module execute(
 	end
 
 	// next state logic
+	logic[1:0] delay, next_delay;
 	logic is_delaying, next_is_valid;
 	always_comb begin : next_state_logic
-		// Execute always completes in one cycle.
-		// TODO:  this isn't true for divide and modulo operations.
-		is_delaying= 0;
+		// Delay if performing a divide or modulo operation.
+		if(flow_in.is_valid && ini.operation[3:1] == 3) begin
+			next_delay= delay + 2'b1;
+		end else begin
+			next_delay= 0;
+		end
+		is_delaying= |next_delay;
 		next_is_valid= !is_delaying && flow_in.is_valid;
 	end : next_state_logic
 
@@ -84,27 +89,30 @@ module execute(
 		if(!flow_in.reset_n) begin
 			flow_out.is_valid <= 0;
 			outi.has_flushed <= 0;
-		end else if(!flow_out.hold) begin
-			flow_out.is_valid <= next_is_valid;
-			outi.pc <= ini.pc;
-			if(ini.is_writing_memory) begin
-				if(ini.operation == 15 && !is_zero) begin
-					outi.destination_register <= 0;
-					outi.is_writing_memory <= 0;
+		end else begin
+			delay <= next_delay;
+			if(!flow_out.hold) begin
+				flow_out.is_valid <= next_is_valid;
+				outi.pc <= ini.pc;
+				if(ini.is_writing_memory) begin
+					if(ini.operation == 15 && !is_zero) begin
+						outi.destination_register <= 0;
+						outi.is_writing_memory <= 0;
+					end else begin
+						outi.destination_register <= ini.address_register;
+						outi.is_writing_memory <= 1;
+					end
 				end else begin
-					outi.destination_register <= ini.address_register;
-					outi.is_writing_memory <= 1;
+					outi.destination_register <= ini.destination_register;
+					outi.is_writing_memory <= 0;
 				end
-			end else begin
-				outi.destination_register <= ini.destination_register;
-				outi.is_writing_memory <= 0;
+				outi.flags <= {has_carry, is_negative, has_overflow, is_zero};
+				outi.destination_value <= output_value;
+				outi.has_upper_value <= has_upper_value;
+				outi.upper_value <= upper_value;
+				outi.adjustment_value <= ini.operation != 15 ? ini.adjustment_value : 0;
+				outi.has_flushed <= ini.has_flushed;
 			end
-			outi.flags <= {has_carry, is_negative, has_overflow, is_zero};
-			outi.destination_value <= output_value;
-			outi.has_upper_value <= has_upper_value;
-			outi.upper_value <= upper_value;
-			outi.adjustment_value <= ini.operation != 15 ? ini.adjustment_value : 0;
-			outi.has_flushed <= ini.has_flushed;
 		end
 	end : state_register
 
