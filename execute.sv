@@ -76,7 +76,7 @@ module execute(
 	always_comb begin : next_state_logic
 		// Delay if performing a divide or modulo operation.
 		if(flow_in.is_valid && ini.operation[3:1] == 3) begin
-			next_delay= delay + 2'b1;
+			next_delay= delay ? delay << 1 : 1;
 		end else begin
 			next_delay= 0;
 		end
