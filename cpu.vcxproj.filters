@@ -120,6 +120,9 @@
     <None Include="system\synthesis\system.v">
       <Filter>Generated Files</Filter>
     </None>
+    <None Include="cache.sv">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">

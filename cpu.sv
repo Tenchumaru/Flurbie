@@ -71,6 +71,23 @@ module cpu(
 	);
 	assign DRAM_CLK= clock;
 
+	logic cache_address_enable;
+	regval_t cache_address;
+	logic cache_data_valid;
+	regval_t cache_data;
+	cache#(6) the_cache(.clock, .reset_n,
+		.input_address_enable(ia_enable),
+		.input_address(ia),
+		.output_address_enable(cache_address_enable),
+		.output_address(cache_address),
+		.input_data_valid(!instruction_data_ready_n),
+		.input_data(instruction_read_data),
+		.output_data_valid(cache_data_valid),
+		.output_data(cache_data)
+	);
+	assign instruction_read_n= !cache_address_enable;
+	assign instruction_read_address= {cache_address[24:2], 2'h0};
+
 	logic ia_enable, iv_valid, da_in_enable, dv_in_valid, da_out_enable, dv_out_valid;
 	regval_t ia, iv, da_in, dv_in, da_out, dv_out;
 
@@ -82,10 +99,8 @@ module cpu(
 	);
 
 	// instruction
-	assign instruction_read_address= {ia[24:2], 2'h0};
-	assign iv= instruction_read_data;
-	assign instruction_read_n= !ia_enable;
-	assign iv_valid= !instruction_data_ready_n;
+	assign iv= cache_data;
+	assign iv_valid= cache_data_valid;
 
 	// data read
 	always_comb begin

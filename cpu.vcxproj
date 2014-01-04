@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <None Include="cache.sv" />
     <None Include="core.sv" />
     <None Include="cpu.qpf" />
     <None Include="cpu.qsf" />
