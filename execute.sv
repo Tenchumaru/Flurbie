@@ -14,12 +14,24 @@ module execute(
 	logic[31:0] uquotient, uremainder;
 
 	// Assign derived signals.
-	assign input_registers= subst_in(ini.pc, registers);
-	assign adjusted_value= adjust(ini.right_value, ini.adjustment_operation, ini.adjustment_value);
+	always_comb begin
+		input_registers= subst_in(ini.pc, registers);
+		case(ini.adjustment_operation)
+			Add:
+				adjusted_value= ini.right_value + ini.adjustment_value;
+			Left:
+				adjusted_value= ini.right_value << ini.adjustment_value[4:0];
+			LogicalRight:
+				adjusted_value= ini.right_value >> ini.adjustment_value[4:0];
+			ArithmeticRight:
+				adjusted_value= $signed(ini.right_value) >>> ini.adjustment_value[4:0];
+		endcase
+	end
 
 	div the_div(.numer(ini.left_value), .denom(adjusted_value), .quotient, .remain(remainder));
 	udiv the_udiv(.numer(ini.left_value), .denom(adjusted_value), .quotient(uquotient), .remain(uremainder));
 
+	// Compute the operation results.
 	always_comb begin
 		has_carry= 0;
 		has_upper_value= 0;
@@ -71,9 +83,24 @@ module execute(
 	end
 
 	// next state logic
+	regind_t destination_register;
+	regval_t adjustment_value;
 	logic[1:0] delay, next_delay;
-	logic is_delaying, next_is_valid;
+	logic is_writing_memory, is_delaying, next_is_valid;
 	always_comb begin : next_state_logic
+		if(ini.is_writing_memory) begin
+			if(ini.operation == 15 && !is_zero) begin
+				destination_register= 0;
+				is_writing_memory= 0;
+			end else begin
+				destination_register= ini.address_register;
+				is_writing_memory= 1;
+			end
+		end else begin
+			destination_register= ini.destination_register;
+			is_writing_memory= 0;
+		end
+		adjustment_value= ini.operation != 15 ? ini.adjustment_value : 0;
 		// Delay if performing a divide or modulo operation.
 		if(flow_in.is_valid && ini.operation[3:1] == 3) begin
 			next_delay= delay ? delay << 1 : 2'b1;
@@ -94,23 +121,13 @@ module execute(
 			if(!flow_out.hold) begin
 				flow_out.is_valid <= next_is_valid;
 				outi.pc <= ini.pc;
-				if(ini.is_writing_memory) begin
-					if(ini.operation == 15 && !is_zero) begin
-						outi.destination_register <= 0;
-						outi.is_writing_memory <= 0;
-					end else begin
-						outi.destination_register <= ini.address_register;
-						outi.is_writing_memory <= 1;
-					end
-				end else begin
-					outi.destination_register <= ini.destination_register;
-					outi.is_writing_memory <= 0;
-				end
+				outi.destination_register <= destination_register;
+				outi.is_writing_memory <= is_writing_memory;
 				outi.flags <= {has_carry, is_negative, has_overflow, is_zero};
 				outi.destination_value <= output_value;
 				outi.has_upper_value <= has_upper_value;
 				outi.upper_value <= upper_value;
-				outi.adjustment_value <= ini.operation != 15 ? ini.adjustment_value : 0;
+				outi.adjustment_value <= adjustment_value;
 				outi.has_flushed <= ini.has_flushed;
 			end
 		end
@@ -122,16 +139,3 @@ module execute(
 	end : output_logic
 
 endmodule
-
-function regval_t adjust(regval_t value, logic[1:0] op, regval_t adjustment_value);
-	case(op)
-		Add:
-			return value + adjustment_value;
-		Left:
-			return value << adjustment_value[4:0];
-		LogicalRight:
-			return value >> adjustment_value[4:0];
-		ArithmeticRight:
-			return $signed(value) >>> adjustment_value[4:0];
-	endcase
-endfunction
