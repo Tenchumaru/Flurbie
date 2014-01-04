@@ -15,6 +15,7 @@
     <None Include="load_store.s" />
     <None Include="Makefile" />
     <None Include="parser.y" />
+    <None Include="pipeline.s" />
     <None Include="scanner.l" />
   </ItemGroup>
   <ItemGroup>

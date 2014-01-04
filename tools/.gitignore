@@ -3,7 +3,6 @@ Release
 *.idb
 *.output
 *.pdb
-*.s
 parser.cpp
 parser.h
 scanner.cpp

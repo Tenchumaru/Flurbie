@@ -37,6 +37,9 @@
     <None Include="load_store.s">
       <Filter>Test Files</Filter>
     </None>
+    <None Include="pipeline.s">
+      <Filter>Test Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
