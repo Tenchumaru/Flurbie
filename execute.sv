@@ -7,10 +7,8 @@ module execute(
 );
 
 	// Compute the right operand.
-	regfile_t input_registers;
 	regval_t adjusted_value;
 	always_comb begin
-		input_registers= subst_in(ini.pc, registers);
 		case(ini.adjustment_operation)
 			Add:
 				adjusted_value= ini.right_value + ini.adjustment_value;
@@ -30,17 +28,18 @@ module execute(
 	udiv the_udiv(.numer(ini.left_value), .denom(adjusted_value), .quotient(uquotient), .remain(uremainder));
 
 	// Compute and select the operation results.
-	logic has_carry, is_negative, has_overflow, is_zero, has_upper_value;
+	logic input_carry, has_carry, is_negative, has_overflow, is_zero, has_upper_value;
 	regval_t output_value, upper_value;
 	always_comb begin
+		input_carry= registers[Flags][30];
 		has_carry= 0;
 		has_upper_value= 0;
 		upper_value= 0;
 		case(ini.operation)
 			0: {has_carry, output_value}= ini.left_value + adjusted_value;
-			1: {has_carry, output_value}= ini.left_value + adjusted_value + input_registers[Flags][30];
+			1: {has_carry, output_value}= ini.left_value + adjusted_value + input_carry;
 			2: {has_carry, output_value}= ini.left_value - adjusted_value;
-			3: {has_carry, output_value}= ini.left_value - adjusted_value - input_registers[Flags][30];
+			3: {has_carry, output_value}= ini.left_value - adjusted_value - input_carry;
 			4: begin
 				has_upper_value= 1;
 				{upper_value, output_value}= $signed(ini.left_value) * $signed(adjusted_value);
