@@ -10,17 +10,13 @@ module fetch(
 );
 
 	// next state logic
-	logic is_flushing, next_is_flushing, next_is_valid;
-	regval_t next_instruction, next_pc;
+	logic is_flushing, next_is_flushing, is_valid;
+	regval_t pc;
 	always_comb begin : next_state_logic
 		next_is_flushing= outi.is_pc_changing || (is_flushing && !ini.has_flushed);
 		// Fetch needs to wait for memory to respond.
-		next_is_valid= data_valid;
-		// TODO:  I need a way to store the data and free the bus if
-		// flow_in.hold is active for a long time.  I need such a mechanism
-		// here and in the read and write stages.
-		next_instruction= data;
-		next_pc= registers[PC];
+		is_valid= data_valid;
+		pc= registers[PC];
 	end : next_state_logic
 
 	// state register
@@ -33,9 +29,9 @@ module fetch(
 		end else begin
 			is_flushing <= next_is_flushing;
 			if(!flow_out.hold) begin
-				flow_out.is_valid <= next_is_valid;
-				outi.instruction <= next_instruction;
-				outi.pc <= next_pc;
+				flow_out.is_valid <= is_valid;
+				outi.instruction <= data;
+				outi.pc <= pc;
 			end
 		end
 	end : state_register
@@ -48,11 +44,11 @@ module fetch(
 			ini.next_pc= 0;
 		end else begin
 			address_enable= !next_is_flushing && !flow_out.hold;
-			address= next_pc;
+			address= pc;
 			if(data_valid && !next_is_flushing && !flow_out.hold ? 4 : 0)
-				ini.next_pc= next_pc + 4;
+				ini.next_pc= pc + 4;
 			else
-				ini.next_pc= next_pc;
+				ini.next_pc= pc;
 		end
 	end : output_logic
 

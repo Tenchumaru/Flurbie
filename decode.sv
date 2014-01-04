@@ -115,11 +115,11 @@ module decode(
 	end
 
 	// next state logic
-	logic is_delaying, next_is_valid;
+	logic is_delaying, is_valid;
 	always_comb begin : next_state_logic
 		// Decode always completes in one cycle.
 		is_delaying= 0;
-		next_is_valid= !is_delaying && is_active;
+		is_valid= !is_delaying && is_active;
 	end : next_state_logic
 
 	// state register
@@ -128,7 +128,7 @@ module decode(
 			flow_out.is_valid <= 0;
 			outi.has_flushed <= 0;
 		end else if(!flow_out.hold) begin
-			flow_out.is_valid <= next_is_valid;
+			flow_out.is_valid <= is_valid;
 			outi.has_flushed <= ini.is_pc_changing;
 			outi.pc <= ini.pc;
 			outi.operation <= operation;

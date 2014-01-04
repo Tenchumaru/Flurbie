@@ -9,8 +9,8 @@ module write(
 	i_write_to_fetch.write_out outi
 );
 
+	// Ready the new values of the registers.
 	regfile_t registers;
-
 	genvar i;
 	generate
 		for(i= 0; i < NR; ++i) begin : assign_registers

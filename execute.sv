@@ -6,14 +6,9 @@ module execute(
 	i_execute_to_write.execute_out outi
 );
 
-	// Declare derived signals.
+	// Compute the right operand.
 	regfile_t input_registers;
-	logic has_carry, is_negative, has_overflow, is_zero, has_upper_value;
-	regval_t adjusted_value, output_value, upper_value;
-	logic[31:0] quotient, remainder;
-	logic[31:0] uquotient, uremainder;
-
-	// Assign derived signals.
+	regval_t adjusted_value;
 	always_comb begin
 		input_registers= subst_in(ini.pc, registers);
 		case(ini.adjustment_operation)
@@ -28,10 +23,15 @@ module execute(
 		endcase
 	end
 
+	// Compute the signed and unsigned quotients and remainders.
+	logic[31:0] quotient, remainder;
+	logic[31:0] uquotient, uremainder;
 	div the_div(.numer(ini.left_value), .denom(adjusted_value), .quotient, .remain(remainder));
 	udiv the_udiv(.numer(ini.left_value), .denom(adjusted_value), .quotient(uquotient), .remain(uremainder));
 
-	// Compute the operation results.
+	// Compute and select the operation results.
+	logic has_carry, is_negative, has_overflow, is_zero, has_upper_value;
+	regval_t output_value, upper_value;
 	always_comb begin
 		has_carry= 0;
 		has_upper_value= 0;
@@ -86,7 +86,7 @@ module execute(
 	regind_t destination_register;
 	regval_t adjustment_value;
 	logic[1:0] delay, next_delay;
-	logic is_writing_memory, is_delaying, next_is_valid;
+	logic is_writing_memory, is_delaying, is_valid;
 	always_comb begin : next_state_logic
 		if(ini.is_writing_memory) begin
 			if(ini.operation == 15 && !is_zero) begin
@@ -108,7 +108,7 @@ module execute(
 			next_delay= 0;
 		end
 		is_delaying= |next_delay;
-		next_is_valid= !is_delaying && flow_in.is_valid;
+		is_valid= !is_delaying && flow_in.is_valid;
 	end : next_state_logic
 
 	// state register
@@ -119,7 +119,7 @@ module execute(
 		end else begin
 			delay <= next_delay;
 			if(!flow_out.hold) begin
-				flow_out.is_valid <= next_is_valid;
+				flow_out.is_valid <= is_valid;
 				outi.pc <= ini.pc;
 				outi.destination_register <= destination_register;
 				outi.is_writing_memory <= is_writing_memory;

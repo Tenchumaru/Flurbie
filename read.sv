@@ -14,12 +14,12 @@ module read(
 	assign input_registers= subst_in(ini.pc, registers);
 
 	// next state logic
-	logic is_reading_memory, is_delaying, next_is_valid;
+	logic is_reading_memory, is_delaying, is_valid;
 	always_comb begin : next_state_logic
 		is_reading_memory= flow_in.is_valid && ini.is_reading_memory;
 		// Read needs to wait for memory to respond.
 		is_delaying= is_reading_memory && !data_valid;
-		next_is_valid= !is_delaying && flow_in.is_valid;
+		is_valid= !is_delaying && flow_in.is_valid;
 	end : next_state_logic
 
 	// state register
@@ -28,7 +28,7 @@ module read(
 			flow_out.is_valid <= 0;
 			outi.has_flushed <= 0;
 		end else if(!flow_out.hold) begin
-			flow_out.is_valid <= next_is_valid;
+			flow_out.is_valid <= is_valid;
 			outi.pc <= ini.pc;
 			outi.operation <= ini.operation;
 			outi.destination_register <= ini.destination_register;
