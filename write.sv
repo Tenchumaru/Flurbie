@@ -57,12 +57,9 @@ module write(
 		end else begin
 			if(flow_in.is_valid) begin
 				outi.has_flushed <= ini.has_flushed;
-				// TODO:  can I remove the subst_in invocation and put the PC
-				// assignment outside of the innermost if block?
-				output_registers <= subst_in(pc, registers);
-			end else begin
-				output_registers[PC] <= pc;
+				output_registers <= registers;
 			end
+			output_registers[PC] <= pc;
 		end
 	end : state_register
 
