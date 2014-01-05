@@ -26,6 +26,24 @@ interface i_flow_control(input logic clock, reset_n);
 	modport out(input clock, reset_n, hold, output is_valid);
 endinterface
 
+interface i_feedback();
+	regval_t value, upper_value;
+	regind_t index;
+	logic is_valid, has_upper_value;
+
+	modport in(input value, upper_value, index, is_valid, has_upper_value,
+		import get_value);
+	modport out(output value, upper_value, index, is_valid, has_upper_value);
+
+	function regval_t get_value(regind_t desired_register, regfile_t registers);
+		return is_valid && desired_register == index ?
+			value :
+			is_valid && has_upper_value && desired_register == index + 1 ?
+			upper_value :
+			registers[desired_register];
+	endfunction
+endinterface
+
 interface i_fetch_to_decode();
 	logic is_pc_changing;
 	regval_t pc, instruction;

@@ -7,7 +7,8 @@ module read(
 	i_flow_control.in flow_in,
 	i_flow_control.out flow_out,
 	i_decode_to_read.read_in ini,
-	i_read_to_execute.read_out outi
+	i_read_to_execute.read_out outi,
+	i_feedback.in feed_in
 );
 
 	regfile_t input_registers;
@@ -32,13 +33,12 @@ module read(
 			outi.pc <= ini.pc;
 			outi.operation <= ini.operation;
 			outi.destination_register <= ini.destination_register;
-			// TODO:  using the left and right registers here isn't correct
-			// since one of them might have been written by whatever
-			// instruction happened to be in the write stage two clock cycles
-			// ago.  This happens to work for the time being since that write
-			// stage was for the previous instruction due to non-optimal pipelining.
-			outi.left_value <= input_registers[ini.left_register];
-			outi.right_value <= ini.is_reading_memory ? data : input_registers[ini.right_register];
+			// TODO:  I also need to feed back the left and right registers
+			// from the write stage.
+			outi.left_value <= feed_in.get_value(ini.left_register, input_registers);
+			outi.right_value <= ini.is_reading_memory ?
+				data :
+				feed_in.get_value(ini.right_register, input_registers);
 			outi.address_register <= ini.address_register;
 			outi.adjustment_operation <= ini.adjustment_operation;
 			outi.adjustment_value <= ini.is_reading_memory && ini.is_writing_memory ?
@@ -49,7 +49,7 @@ module read(
 				// two cores from executing this code at exactly the same time.
 				// Consider using a priority mechanism that allows core 0 to
 				// execute this before core 1, which executes before core 2, etc.
-				input_registers[ini.right_register] :
+				feed_in.get_value(ini.right_register, input_registers) :
 				ini.adjustment_value;
 			outi.is_writing_memory <= ini.is_writing_memory;
 			outi.has_flushed <= ini.has_flushed;
@@ -60,7 +60,7 @@ module read(
 	always_comb begin : output_logic
 		flow_in.hold= (flow_out.hold || is_delaying) && flow_in.is_valid;
 		address_enable= is_reading_memory;
-		address= input_registers[ini.address_register] + ini.adjustment_value;
+		address= feed_in.get_value(ini.address_register, input_registers) + ini.adjustment_value;
 	end : output_logic
 
 endmodule

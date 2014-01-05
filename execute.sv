@@ -3,7 +3,8 @@ module execute(
 	i_flow_control.in flow_in,
 	i_flow_control.out flow_out,
 	i_read_to_execute.execute_in ini,
-	i_execute_to_write.execute_out outi
+	i_execute_to_write.execute_out outi,
+	i_feedback.out feed_out
 );
 
 	// Compute the right operand.
@@ -84,7 +85,7 @@ module execute(
 	// next state logic
 	regind_t destination_register;
 	regval_t adjustment_value;
-	logic[1:0] delay, next_delay;
+	logic[2:0] delay, next_delay;
 	logic is_writing_memory, is_delaying, is_valid;
 	always_comb begin : next_state_logic
 		if(ini.is_writing_memory) begin
@@ -135,6 +136,11 @@ module execute(
 	// output logic
 	always_comb begin : output_logic
 		flow_in.hold= (flow_out.hold || is_delaying) && flow_in.is_valid;
+		feed_out.value= output_value;
+		feed_out.upper_value= upper_value;
+		feed_out.index= destination_register;
+		feed_out.is_valid= is_valid;
+		feed_out.has_upper_value= has_upper_value;
 	end : output_logic
 
 endmodule
