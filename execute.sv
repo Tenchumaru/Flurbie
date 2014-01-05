@@ -4,7 +4,7 @@ module execute(
 	i_flow_control.out flow_out,
 	i_read_to_execute.execute_in ini,
 	i_execute_to_write.execute_out outi,
-	i_feedback.out feed_out
+	i_feedback.out feedback
 );
 
 	// Compute the right operand.
@@ -136,11 +136,11 @@ module execute(
 	// output logic
 	always_comb begin : output_logic
 		flow_in.hold= (flow_out.hold || is_delaying) && flow_in.is_valid;
-		feed_out.value= output_value;
-		feed_out.upper_value= upper_value;
-		feed_out.index= destination_register;
-		feed_out.is_valid= is_valid;
-		feed_out.has_upper_value= has_upper_value;
+		feedback.value= output_value;
+		feedback.upper_value= upper_value;
+		feedback.index= destination_register;
+		feedback.is_valid= is_valid;
+		feedback.has_upper_value= has_upper_value;
 	end : output_logic
 
 endmodule

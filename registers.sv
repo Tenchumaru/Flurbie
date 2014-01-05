@@ -32,10 +32,18 @@ interface i_feedback();
 	logic is_valid, has_upper_value;
 
 	modport in(input value, upper_value, index, is_valid, has_upper_value,
-		import get_value);
+		import get_d_value, import get_r_value);
 	modport out(output value, upper_value, index, is_valid, has_upper_value);
 
-	function regval_t get_value(regind_t desired_register, regfile_t registers);
+	function regval_t get_d_value(regind_t desired_register, regval_t default_value);
+		return is_valid && desired_register == index ?
+			value :
+			is_valid && has_upper_value && desired_register == index + 1 ?
+			upper_value :
+			default_value;
+	endfunction
+
+	function regval_t get_r_value(regind_t desired_register, regfile_t registers);
 		return is_valid && desired_register == index ?
 			value :
 			is_valid && has_upper_value && desired_register == index + 1 ?
