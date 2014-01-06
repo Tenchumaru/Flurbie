@@ -23,6 +23,7 @@ module core(
 	i_execute_to_write the_etw();
 	i_write_to_fetch the_wtf();
 	i_feedback execute_feedback();
+	i_feedback write_feedback();
 
 	fetch the_fetch(
 		.registers,
@@ -53,7 +54,8 @@ module core(
 		.flow_out(flow_rte.out),
 		.ini(the_dtr.read_in),
 		.outi(the_rte.read_out),
-		.execute_feedback(execute_feedback.in)
+		.execute_feedback(execute_feedback.in),
+		.write_feedback(write_feedback.in)
 	);
 
 	execute the_execute(
@@ -74,7 +76,8 @@ module core(
 		.data_valid(dv_out_valid),
 		.flow_in(flow_etw.in),
 		.ini(the_etw.write_in),
-		.outi(the_wtf.write_out)
+		.outi(the_wtf.write_out),
+		.feedback(write_feedback.out)
 	);
 
 endmodule

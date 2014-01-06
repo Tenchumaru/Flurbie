@@ -36,17 +36,21 @@ interface i_feedback();
 	modport out(output value, upper_value, index, is_valid, has_upper_value);
 
 	function regval_t get_d_value(regind_t desired_register, regval_t default_value);
-		return is_valid && desired_register == index ?
+		logic is_useable;
+		is_useable= is_valid && desired_register != 0;
+		return is_useable && desired_register == index ?
 			value :
-			is_valid && has_upper_value && desired_register == index + 1 ?
+			is_useable && has_upper_value && desired_register == index + 1 ?
 			upper_value :
 			default_value;
 	endfunction
 
 	function regval_t get_r_value(regind_t desired_register, regfile_t registers);
-		return is_valid && desired_register == index ?
+		logic is_useable;
+		is_useable= is_valid && desired_register != 0;
+		return is_useable && desired_register == index ?
 			value :
-			is_valid && has_upper_value && desired_register == index + 1 ?
+			is_useable && has_upper_value && desired_register == index + 1 ?
 			upper_value :
 			registers[desired_register];
 	endfunction

@@ -6,7 +6,8 @@ module write(
 	output regfile_t output_registers,
 	i_flow_control.in flow_in,
 	i_execute_to_write.write_in ini,
-	i_write_to_fetch.write_out outi
+	i_write_to_fetch.write_out outi,
+	i_feedback.out feedback
 );
 
 	// Ready the new values of the registers.
@@ -69,6 +70,11 @@ module write(
 		address_enable= is_writing_memory;
 		address= registers[ini.destination_register] + ini.adjustment_value;
 		data= ini.destination_value;
+		feedback.value= ini.destination_value;
+		feedback.upper_value= ini.upper_value;
+		feedback.index= ini.destination_register;
+		feedback.is_valid= flow_in.is_valid && !ini.is_writing_memory;
+		feedback.has_upper_value= ini.has_upper_value;
 	end : output_logic
 
 endmodule

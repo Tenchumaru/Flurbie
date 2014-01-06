@@ -139,7 +139,7 @@ module execute(
 		feedback.value= output_value;
 		feedback.upper_value= upper_value;
 		feedback.index= destination_register;
-		feedback.is_valid= is_valid;
+		feedback.is_valid= is_valid && !is_writing_memory;
 		feedback.has_upper_value= has_upper_value;
 	end : output_logic
 

@@ -8,7 +8,8 @@ module read(
 	i_flow_control.out flow_out,
 	i_decode_to_read.read_in ini,
 	i_read_to_execute.read_out outi,
-	i_feedback.in execute_feedback
+	i_feedback.in execute_feedback,
+	i_feedback.in write_feedback
 );
 
 	regfile_t input_registers;
@@ -18,8 +19,10 @@ module read(
 	regval_t left_value, right_register_value, right_value, adjustment_value;
 	logic is_reading_memory, is_delaying, is_valid;
 	always_comb begin : next_state_logic
-		left_value= execute_feedback.get_r_value(ini.left_register, input_registers);
-		right_register_value= execute_feedback.get_r_value(ini.right_register, input_registers);
+		left_value= write_feedback.get_r_value(ini.left_register, input_registers);
+		left_value= execute_feedback.get_d_value(ini.left_register, left_value);
+		right_register_value= write_feedback.get_r_value(ini.right_register, input_registers);
+		right_register_value= execute_feedback.get_d_value(ini.right_register, right_register_value);
 		right_value= ini.is_reading_memory ? data : right_register_value;
 		adjustment_value= ini.is_reading_memory && ini.is_writing_memory ?
 			// For the CX instruction, set the adjustment value to the right
@@ -47,8 +50,6 @@ module read(
 			outi.pc <= ini.pc;
 			outi.operation <= ini.operation;
 			outi.destination_register <= ini.destination_register;
-			// TODO:  I also need to feed back the left and right registers
-			// from the write stage.
 			outi.left_value <= left_value;
 			outi.right_value <= right_value;
 			outi.address_register <= ini.address_register;
@@ -63,7 +64,8 @@ module read(
 	always_comb begin : output_logic
 		flow_in.hold= (flow_out.hold || is_delaying) && flow_in.is_valid;
 		address_enable= is_reading_memory;
-		address= execute_feedback.get_r_value(ini.address_register, input_registers) + ini.adjustment_value;
+		address= write_feedback.get_r_value(ini.address_register, input_registers);
+		address= execute_feedback.get_d_value(ini.address_register, address) + ini.adjustment_value;
 	end : output_logic
 
 endmodule
