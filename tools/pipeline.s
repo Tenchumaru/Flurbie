@@ -9,7 +9,9 @@ ldi!z pc, loop1      ; 08 0f090004
 ldi r1, mem1         ; 0c 0705003c
 ld r1, [r1]          ; 10 07040800
 set r3, r1           ; 14 000e0080
-ldi pc, 0            ; 18 07090000
+ldi r3, mem1         ; 18 070d003c
+st [r3, -4], r1      ; 1c 07071ffc
+ldi pc, 0            ; 20 07090000
 
 . = mem1 - 8
 .int $dddddddd       ; 34 dddddddd
