@@ -12,13 +12,13 @@ module read(
 	i_feedback.in write_feedback
 );
 
-	regfile_t input_registers;
-	assign input_registers= subst_in(ini.pc, registers);
-
 	// next state logic
+	regfile_t input_registers;
 	regval_t left_value, right_register_value, right_value, adjustment_value;
 	logic masked_flags, is_active, is_inactive, is_reading_memory, is_delaying, is_valid, has_flushed;
 	always_comb begin : next_state_logic
+		input_registers= registers;
+		input_registers[PC]= ini.pc;
 		masked_flags= |(ini.cnvz_mask & outi.flags);
 		is_active= flow_in.is_valid && ini.is_non_zero_active == masked_flags;
 		is_inactive= flow_in.is_valid && ini.is_non_zero_active != masked_flags;

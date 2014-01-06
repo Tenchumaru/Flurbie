@@ -7,11 +7,6 @@ parameter regfile_t ZeroRegFile= '{NR{0}};
 parameter Flags= NR - 1;
 parameter PC= Flags - 1;
 
-function regfile_t subst_in(input regval_t pc, input regfile_t registers);
-	// TODO:  can this be free of a hard-coded list?
-	return '{0, registers[1], pc, registers[Flags]};
-endfunction
-
 // shift operation
 parameter logic[1:0] Add= 0;
 parameter logic[1:0] Left= 1;
