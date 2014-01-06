@@ -41,7 +41,7 @@ module decode(
 	assign exchange_address_register= ini.instruction[6:2];
 
 	// Declare the derived signals.
-	logic masked_flags, is_active, is_reading_memory, is_writing_memory;
+	logic is_reading_memory, is_writing_memory;
 	logic[3:0] operation;
 	regind_t left_register, right_register, address_register;
 	logic[1:0] adjustment_operation;
@@ -49,13 +49,6 @@ module decode(
 
 	// Set derived signals.
 	always_comb begin
-		// TODO:  using the flags register here isn't correct since it might
-		// have been written by whatever instruction happened to be in the
-		// write stage three clock cycles ago.  This happens to work for the
-		// time being since that write stage was for the previous instruction
-		// due to non-optimal pipelining.
-		masked_flags= |(cnvz_mask & registers[Flags][30:27]);
-		is_active= flow_in.is_valid && is_non_zero_active == masked_flags;
 		is_reading_memory= 0;
 		is_writing_memory= 0;
 		operation= raw_operation;
@@ -115,11 +108,12 @@ module decode(
 	end
 
 	// next state logic
-	logic is_delaying, is_valid;
+	logic is_delaying, is_valid, is_pc_changing;
 	always_comb begin : next_state_logic
 		// Decode always completes in one cycle.
 		is_delaying= 0;
-		is_valid= !is_delaying && is_active;
+		is_valid= !is_delaying && flow_in.is_valid;
+		is_pc_changing= is_valid && (!is_writing_memory || is_reading_memory) && destination_register == PC;
 	end : next_state_logic
 
 	// state register
@@ -129,8 +123,10 @@ module decode(
 			outi.has_flushed <= 0;
 		end else if(!flow_out.hold) begin
 			flow_out.is_valid <= is_valid;
-			outi.has_flushed <= ini.is_pc_changing;
+			outi.has_flushed <= is_pc_changing;
 			outi.pc <= ini.pc;
+			outi.is_non_zero_active <= is_non_zero_active;
+			outi.cnvz_mask <= cnvz_mask;
 			outi.operation <= operation;
 			outi.destination_register <= destination_register;
 			outi.left_register <= left_register;
@@ -146,7 +142,8 @@ module decode(
 	// output logic
 	always_comb begin : output_logic
 		flow_in.hold= (flow_out.hold || is_delaying) && flow_in.is_valid;
-		ini.is_pc_changing= is_active && (!is_writing_memory || is_reading_memory) && destination_register == PC;
+		ini.is_pc_changing= is_pc_changing;
+		ini.early_flush= outi.early_flush;
 	end : output_logic
 
 endmodule

@@ -8,6 +8,7 @@ parameter Flags= NR - 1;
 parameter PC= Flags - 1;
 
 function regfile_t subst_in(input regval_t pc, input regfile_t registers);
+	// TODO:  can this be free of a hard-coded list?
 	return '{0, registers[1], pc, registers[Flags]};
 endfunction
 
@@ -45,6 +46,7 @@ interface i_feedback();
 			default_value;
 	endfunction
 
+	// TODO:  can this use get_d_value?
 	function regval_t get_r_value(regind_t desired_register, regfile_t registers);
 		logic is_useable;
 		is_useable= is_valid && desired_register != 0;
@@ -57,52 +59,55 @@ interface i_feedback();
 endinterface
 
 interface i_fetch_to_decode();
-	logic is_pc_changing;
+	logic is_pc_changing, early_flush;
 	regval_t pc, instruction;
 
 	modport fetch_out(
-		input is_pc_changing,
+		input is_pc_changing, early_flush,
 		output pc, instruction
 	);
 
 	modport decode_in(
 		input pc, instruction,
-		output is_pc_changing
+		output is_pc_changing, early_flush
 	);
 endinterface
 
 interface i_decode_to_read();
 	regval_t pc, adjustment_value;
 	regind_t destination_register, left_register, right_register, address_register;
-	logic[3:0] operation;
+	logic[3:0] cnvz_mask, operation;
 	logic[1:0] adjustment_operation;
-	logic has_flushed, is_reading_memory, is_writing_memory;
+	logic is_non_zero_active, has_flushed, early_flush, is_reading_memory, is_writing_memory;
 
 	modport decode_out(
+		input early_flush,
 		output pc, adjustment_value,
 		output destination_register, left_register, right_register, address_register,
-		output operation,
+		output cnvz_mask, operation,
 		output adjustment_operation,
-		output has_flushed, is_reading_memory, is_writing_memory
+		output is_non_zero_active, has_flushed, is_reading_memory, is_writing_memory
 	);
 
 	modport read_in(
 		input pc, adjustment_value,
 		input destination_register, left_register, right_register, address_register,
-		input operation,
+		input cnvz_mask, operation,
 		input adjustment_operation,
-		input has_flushed, is_reading_memory, is_writing_memory
+		input is_non_zero_active, has_flushed, is_reading_memory, is_writing_memory,
+		output early_flush
 	);
 endinterface
 
 interface i_read_to_execute();
 	regval_t pc, adjustment_value, left_value, right_value;
 	regind_t destination_register, address_register;
-	logic[3:0] operation;
+	logic[3:0] operation, flags;
 	logic[1:0] adjustment_operation;
 	logic has_flushed, is_writing_memory;
 
 	modport read_out(
+		input flags,
 		output pc, adjustment_value, left_value, right_value,
 		output destination_register, address_register,
 		output operation,
@@ -115,7 +120,8 @@ interface i_read_to_execute();
 		input destination_register, address_register,
 		input operation,
 		input adjustment_operation,
-		input has_flushed, is_writing_memory
+		input has_flushed, is_writing_memory,
+		output flags
 	);
 endinterface
 

@@ -13,7 +13,7 @@ module fetch(
 	logic is_flushing, next_is_flushing, is_valid;
 	regval_t pc;
 	always_comb begin : next_state_logic
-		next_is_flushing= outi.is_pc_changing || (is_flushing && !ini.has_flushed);
+		next_is_flushing= outi.is_pc_changing || (is_flushing && !(outi.early_flush || ini.has_flushed));
 		// Fetch needs to wait for memory to respond.
 		is_valid= data_valid;
 		pc= registers[PC];

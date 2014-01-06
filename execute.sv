@@ -83,11 +83,13 @@ module execute(
 	end
 
 	// next state logic
+	logic[3:0] flags;
 	regind_t destination_register;
 	regval_t adjustment_value;
 	logic[2:0] delay, next_delay;
 	logic is_writing_memory, is_delaying, is_valid;
 	always_comb begin : next_state_logic
+		flags= {has_carry, is_negative, has_overflow, is_zero};
 		if(ini.is_writing_memory) begin
 			if(ini.operation == 15 && !is_zero) begin
 				destination_register= 0;
@@ -123,7 +125,7 @@ module execute(
 				outi.pc <= ini.pc;
 				outi.destination_register <= destination_register;
 				outi.is_writing_memory <= is_writing_memory;
-				outi.flags <= {has_carry, is_negative, has_overflow, is_zero};
+				outi.flags <= flags;
 				outi.destination_value <= output_value;
 				outi.has_upper_value <= has_upper_value;
 				outi.upper_value <= upper_value;
@@ -136,6 +138,7 @@ module execute(
 	// output logic
 	always_comb begin : output_logic
 		flow_in.hold= (flow_out.hold || is_delaying) && flow_in.is_valid;
+		ini.flags= flags;
 		feedback.value= output_value;
 		feedback.upper_value= upper_value;
 		feedback.index= destination_register;

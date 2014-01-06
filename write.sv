@@ -21,10 +21,9 @@ module write(
 					: {input_registers[i][31], ini.flags, input_registers[i][26:0]};
 			end else if(i == PC) begin
 				// Since the output PC register gets the PC computed in the
-				// next state logic because of the subst_in invocation, assign
-				// the PC that was active at the time the current instruction
-				// was fetched for purposes of computing a write address, used
-				// in the output logic below.
+				// next state logic below, assign the PC that was active at the
+				// time the current instruction was fetched for purposes of
+				// computing a write address, used in the output logic below.
 				assign registers[i]= ini.pc;
 			end else if(i == 0) begin
 				assign registers[i]= 0;
@@ -59,6 +58,8 @@ module write(
 			if(flow_in.is_valid) begin
 				outi.has_flushed <= ini.has_flushed;
 				output_registers <= registers;
+			end else begin
+				outi.has_flushed <= 0;
 			end
 			output_registers[PC] <= pc;
 		end

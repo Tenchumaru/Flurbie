@@ -17,8 +17,11 @@ module read(
 
 	// next state logic
 	regval_t left_value, right_register_value, right_value, adjustment_value;
-	logic is_reading_memory, is_delaying, is_valid;
+	logic masked_flags, is_active, is_inactive, is_reading_memory, is_delaying, is_valid, has_flushed;
 	always_comb begin : next_state_logic
+		masked_flags= |(ini.cnvz_mask & outi.flags);
+		is_active= flow_in.is_valid && ini.is_non_zero_active == masked_flags;
+		is_inactive= flow_in.is_valid && ini.is_non_zero_active != masked_flags;
 		left_value= write_feedback.get_r_value(ini.left_register, input_registers);
 		left_value= execute_feedback.get_d_value(ini.left_register, left_value);
 		right_register_value= write_feedback.get_r_value(ini.right_register, input_registers);
@@ -34,10 +37,11 @@ module read(
 			// execute this before core 1, which executes before core 2, etc.
 			right_register_value :
 			ini.adjustment_value;
-		is_reading_memory= flow_in.is_valid && ini.is_reading_memory;
+		is_reading_memory= is_active && ini.is_reading_memory;
 		// Read needs to wait for memory to respond.
 		is_delaying= is_reading_memory && !data_valid;
-		is_valid= !is_delaying && flow_in.is_valid;
+		is_valid= !is_delaying && is_active;
+		has_flushed= ini.has_flushed && is_active;
 	end : next_state_logic
 
 	// state register
@@ -56,7 +60,7 @@ module read(
 			outi.adjustment_operation <= ini.adjustment_operation;
 			outi.adjustment_value <= adjustment_value;
 			outi.is_writing_memory <= ini.is_writing_memory;
-			outi.has_flushed <= ini.has_flushed;
+			outi.has_flushed <= has_flushed;
 		end
 	end : state_register
 
@@ -66,6 +70,7 @@ module read(
 		address_enable= is_reading_memory;
 		address= write_feedback.get_r_value(ini.address_register, input_registers);
 		address= execute_feedback.get_d_value(ini.address_register, address) + ini.adjustment_value;
+		ini.early_flush= ini.has_flushed && is_inactive;
 	end : output_logic
 
 endmodule

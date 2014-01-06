@@ -39,7 +39,7 @@ module cache#(parameter N)(input clock, reset_n,
 		is_available= is_loaded[line_address];
 		output_address_enable= input_address_enable && !is_available;
 		output_address= input_address;
-		output_data_valid= is_available || input_data_valid;
+		output_data_valid= input_address_enable && (is_available || input_data_valid);
 		output_data= is_available ? lines[line_address] : input_data;
 	end : output_logic
 
