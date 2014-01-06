@@ -59,6 +59,8 @@ module write(
 				outi.has_flushed <= ini.has_flushed;
 				if(!ini.is_writing_memory)
 					output_registers <= registers;
+				else
+					output_registers[Flags] <= registers[Flags];
 			end else begin
 				outi.has_flushed <= 0;
 			end

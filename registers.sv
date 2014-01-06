@@ -41,7 +41,6 @@ interface i_feedback();
 			default_value;
 	endfunction
 
-	// TODO:  can this use get_d_value?
 	function regval_t get_r_value(regind_t desired_register, regfile_t registers);
 		logic is_useable;
 		is_useable= is_valid && desired_register != 0;
