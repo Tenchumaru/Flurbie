@@ -16,8 +16,8 @@ module write(
 	generate
 		for(i= 0; i < NR; ++i) begin : assign_registers
 			if(i == Flags) begin
-				assign registers[i]= i == ini.destination_register && !ini.is_writing_memory
-					? ini.destination_value
+				assign registers[i]= i == ini.target_register && !ini.is_writing_memory
+					? ini.target_value
 					: {input_registers[i][31], ini.flags, input_registers[i][26:0]};
 			end else if(i == PC) begin
 				// Since the output PC register gets the PC computed in the
@@ -28,9 +28,9 @@ module write(
 			end else if(i == 0) begin
 				assign registers[i]= 0;
 			end else begin
-				assign registers[i]= i == ini.destination_register && !ini.is_writing_memory
-					? ini.destination_value
-					: ini.has_upper_value && i == ini.destination_register + 1 && !ini.is_writing_memory
+				assign registers[i]= i == ini.target_register && !ini.is_writing_memory
+					? ini.target_value
+					: ini.has_upper_value && i == ini.target_register + 1 && !ini.is_writing_memory
 					? ini.upper_value
 					: input_registers[i];
 			end
@@ -41,8 +41,8 @@ module write(
 	regval_t pc;
 	logic is_writing_memory, is_delaying;
 	always_comb begin : next_state_logic
-		pc= flow_in.is_valid && ini.destination_register == PC && !ini.is_writing_memory
-			? ini.destination_value
+		pc= flow_in.is_valid && ini.target_register == PC && !ini.is_writing_memory
+			? ini.target_value
 			: outi.next_pc;
 		is_writing_memory= flow_in.is_valid && ini.is_writing_memory;
 		// Write needs to wait for memory to respond.
@@ -72,11 +72,11 @@ module write(
 	always_comb begin : output_logic
 		flow_in.hold= flow_in.reset_n && is_delaying && flow_in.is_valid;
 		address_enable= is_writing_memory;
-		address= registers[ini.destination_register] + ini.adjustment_value;
-		data= ini.destination_value;
-		feedback.value= ini.destination_value;
+		address= registers[ini.target_register] + ini.adjustment_value;
+		data= ini.target_value;
+		feedback.value= ini.target_value;
 		feedback.upper_value= ini.upper_value;
-		feedback.index= ini.destination_register;
+		feedback.index= ini.target_register;
 		feedback.is_valid= flow_in.is_valid && !ini.is_writing_memory;
 		feedback.has_upper_value= ini.has_upper_value;
 	end : output_logic

@@ -10,7 +10,7 @@ module decode(
 	logic is_non_zero_active; // 31
 	logic[3:0] cnvz_mask; // 30-27
 	logic[3:0] raw_operation; // 26-23
-	regind_t destination_register;  // 22-18
+	regind_t target_register;  // 22-18
 	logic is_register; // 17
 	regind_t sr1; // 16-12
 	logic[11:0] immediate_operand; // 11-0
@@ -27,7 +27,7 @@ module decode(
 	assign is_non_zero_active= ini.instruction[31];
 	assign cnvz_mask= ini.instruction[30:27];
 	assign raw_operation= ini.instruction[26:23];
-	assign destination_register= ini.instruction[22:18];
+	assign target_register= ini.instruction[22:18];
 	assign is_register= ini.instruction[17];
 	assign sr1= ini.instruction[16:12];
 	assign immediate_operand= ini.instruction[11:0];
@@ -75,13 +75,13 @@ module decode(
 					2: begin
 						// xorih
 						operation= 12; // XOR
-						left_register= destination_register;
+						left_register= target_register;
 						adjustment_value= {immediate_value[15:0], 16'h0};
 					end
 					3: begin
 						// store
 						is_writing_memory= 1;
-						left_register= destination_register;
+						left_register= target_register;
 						adjustment_operation= Left;
 						adjustment_value= $signed(address_offset);
 					end
@@ -113,7 +113,7 @@ module decode(
 		// Decode always completes in one cycle.
 		is_delaying= 0;
 		is_valid= !is_delaying && flow_in.is_valid;
-		is_pc_changing= is_valid && (!is_writing_memory || is_reading_memory) && destination_register == PC;
+		is_pc_changing= is_valid && (!is_writing_memory || is_reading_memory) && target_register == PC;
 	end : next_state_logic
 
 	// state register
@@ -128,7 +128,7 @@ module decode(
 			outi.is_non_zero_active <= is_non_zero_active;
 			outi.cnvz_mask <= cnvz_mask;
 			outi.operation <= operation;
-			outi.destination_register <= destination_register;
+			outi.target_register <= target_register;
 			outi.left_register <= left_register;
 			outi.right_register <= right_register;
 			outi.address_register <= address_register;

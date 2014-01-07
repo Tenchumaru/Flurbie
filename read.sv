@@ -53,7 +53,7 @@ module read(
 			flow_out.is_valid <= is_valid;
 			outi.pc <= ini.pc;
 			outi.operation <= ini.operation;
-			outi.destination_register <= ini.destination_register;
+			outi.target_register <= ini.target_register;
 			outi.left_value <= left_value;
 			outi.right_value <= right_value;
 			outi.address_register <= ini.address_register;

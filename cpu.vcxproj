@@ -40,10 +40,12 @@
     <None Include="fetch.sv" />
     <None Include="fetch_tb.sv" />
     <None Include="fetch_tb.txt" />
+    <None Include="LICENSE" />
     <None Include="Makefile" />
     <None Include="makevecs.js" />
     <None Include="make_tb.js" />
     <None Include="read.sv" />
+    <None Include="README.md" />
     <None Include="read_tb.sv" />
     <None Include="read_tb.txt" />
     <None Include="registers.sv" />

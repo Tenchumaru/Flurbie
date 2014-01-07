@@ -123,6 +123,8 @@
     <None Include="cache.sv">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="LICENSE" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">

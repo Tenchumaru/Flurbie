@@ -84,7 +84,7 @@ module execute(
 
 	// next state logic
 	logic[3:0] flags;
-	regind_t destination_register;
+	regind_t target_register;
 	regval_t adjustment_value;
 	logic[2:0] delay, next_delay;
 	logic is_writing_memory, is_delaying, is_valid;
@@ -92,14 +92,14 @@ module execute(
 		flags= {has_carry, is_negative, has_overflow, is_zero};
 		if(ini.is_writing_memory) begin
 			if(ini.operation == 15 && !is_zero) begin
-				destination_register= 0;
+				target_register= 0;
 				is_writing_memory= 0;
 			end else begin
-				destination_register= ini.address_register;
+				target_register= ini.address_register;
 				is_writing_memory= 1;
 			end
 		end else begin
-			destination_register= ini.destination_register;
+			target_register= ini.target_register;
 			is_writing_memory= 0;
 		end
 		adjustment_value= ini.operation != 15 ? ini.adjustment_value : 0;
@@ -123,10 +123,10 @@ module execute(
 			if(!flow_out.hold) begin
 				flow_out.is_valid <= is_valid;
 				outi.pc <= ini.pc;
-				outi.destination_register <= destination_register;
+				outi.target_register <= target_register;
 				outi.is_writing_memory <= is_writing_memory;
 				outi.flags <= flags;
-				outi.destination_value <= output_value;
+				outi.target_value <= output_value;
 				outi.has_upper_value <= has_upper_value;
 				outi.upper_value <= upper_value;
 				outi.adjustment_value <= adjustment_value;
@@ -141,7 +141,7 @@ module execute(
 		ini.flags= flags;
 		feedback.value= output_value;
 		feedback.upper_value= upper_value;
-		feedback.index= destination_register;
+		feedback.index= target_register;
 		feedback.is_valid= is_valid && !is_writing_memory;
 		feedback.has_upper_value= has_upper_value;
 	end : output_logic
