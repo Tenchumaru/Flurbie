@@ -79,7 +79,7 @@ module execute(
 			default:
 				has_overflow= 0;
 		endcase
-		is_zero= ini.operation == 15 ? ini.left_value == ini.right_value : output_value == 0;
+		is_zero= is_special(ini.operation) ? ini.left_value == ini.right_value : output_value == 0;
 	end
 
 	// next state logic
@@ -90,19 +90,16 @@ module execute(
 	logic is_writing_memory, is_delaying, is_valid;
 	always_comb begin : next_state_logic
 		flags= {has_carry, is_negative, has_overflow, is_zero};
-		if(ini.is_writing_memory) begin
-			if(ini.operation == 15 && !is_zero) begin
-				target_register= 0;
-				is_writing_memory= 0;
-			end else begin
-				target_register= ini.address_register;
-				is_writing_memory= 1;
-			end
-		end else begin
+		is_writing_memory= 0;
+		if(!ini.is_writing_memory) begin
 			target_register= ini.target_register;
-			is_writing_memory= 0;
+		end else if(is_special(ini.operation) && !is_zero) begin
+			target_register= 0;
+		end else begin
+			target_register= ini.address_register;
+			is_writing_memory= 1;
 		end
-		adjustment_value= ini.operation != 15 ? ini.adjustment_value : 0;
+		adjustment_value= is_special(ini.operation) ? 0 : ini.adjustment_value;
 		// Delay if performing a divide or modulo operation.
 		if(flow_in.is_valid && ini.operation[3:1] == 3) begin
 			next_delay= delay ? delay << 1 : 2'b1;

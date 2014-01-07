@@ -15,6 +15,10 @@ parameter logic[1:0] ArithmeticRight= 3;
 
 parameter regval_t Nop= 32'h80000000;
 
+function logic is_special(logic[3:0] operation);
+	return &operation;
+endfunction
+
 interface i_flow_control(input logic clock, reset_n);
 	logic is_valid, hold;
 
