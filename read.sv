@@ -26,6 +26,9 @@ module read(
 		left_value= execute_feedback.get_d_value(ini.left_register, left_value);
 		right_register_value= write_feedback.get_r_value(ini.right_register, input_registers);
 		right_register_value= execute_feedback.get_d_value(ini.right_register, right_register_value);
+		// TODO:  if the memory this stage wants to read is the target of an
+		// instruction currently in the execute or write stages, I want to use
+		// one of those values instead of reading memory.
 		right_value= ini.is_reading_memory ? data : right_register_value;
 		adjustment_value= ini.is_reading_memory && ini.is_writing_memory ?
 			// For the CX instruction, set the adjustment value to the right

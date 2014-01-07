@@ -98,6 +98,6 @@ immediate source2:  tr= lr op (R0 + value12)
 register source2:   tr= lr op (rr shop value5)
 ld:                 tr= R0 | *(ar + value11)
 ldi:                tr= R0 | (R0 + value15)
-ori:                tr= tr | (R0 + value15)
+xorih:              tr= tr | (R0 + value15 << 16)
 store:              *(ar + value11)= tr | (R0 << value11)
 SPECIAL:            tr= *(ar + 0); if(tr == lr) *(ar + 0)= (rr + 0);
