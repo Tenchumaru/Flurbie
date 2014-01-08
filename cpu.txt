@@ -36,15 +36,15 @@ Patterns
 
 standard:
 22-18   target register (tr, 0-31)
-17      source2 mode
-        0       immediate source2
-        1       register source2
+17      right source
+        0       immediate
+        1       register
 16-12   left register (lr, 0-31)
 
-immediate source2:  tr= lr op value
+immediate right source:  tr= lr op value
 11-0    12-bit value sign-extended to 32 bits
 
-register source2:  tr= lr op (rr shop value)
+register right source:  tr= lr op (rr shop value)
 11-7    right register (rr, 0-31)
 6-5     shift operation
         00      add -16 to 15
@@ -54,33 +54,28 @@ register source2:  tr= lr op (rr shop value)
 4-0     5-bit value (0-31)
 
 MEM:
-22-18   register (r, 0-31)
-17-16   mop
-        00      ld
-        01      ldi
-        10      xorih
-        11      store
+22-18   target register (tr, 0-31)
+17      source
+        0       immediate
+        1       memory
 
-ld:  r= *(ar + value)
-15-11   address register (ar, 0-31)
+immediate source:
+16      0       load immediate (ldi):  tr= sign-extended value
+        1       XOR immediate high (xorih):  tr xor= value << 16
+15-0    16-bit value
+
+memory source:
+16-12   left register (lr, 0-31)
+11      0       load (ld):  tr= *(lr + value)
+        1       store (st):  *(tr + value)= lr
 10-0    11-bit value sign-extended to 32 bits
 
-ldi:  r= value
-15-0    16-bit value sign-extended to 32 bits
-
-xorih:  r xor= value << 16
-15-0    16-bit unsigned value
-
-store:  *(ar + value)= r
-15-11   address register (ar, 0-31)
-10-0    11-bit value sign-extended to 32 bits
-
-SPECIAL:  tr= *ar; if(tr == cr) *ar= sr;
+SPECIAL:  tr= *lr; if(tr == cr) *lr= rr;
 22-18   target register (tr, 0-31)
 17      unused
-16-12   compare register (cr, 0-31)
-11-7    source register (sr, 0-31)
-6-2     address register (ar, 0-31)
+16-12   left register (lr, 0-31)
+11-7    right register (rr, 0-31)
+6-2     compare register (cr, 0-31)
 1-0     unused
 
 r31 is flags (User mode is in bit 31, CNVZ are in bits 30-27)
@@ -93,11 +88,12 @@ Consider having supervisor mode see user mode's r17 through r31 in its r1
 through r15 with its own copies of r16 through r31.  r0 is still always zero.
 
 Operation Forms
----------------
-immediate source2:  tr= lr op (R0 + value12)
-register source2:   tr= lr op (rr shop value5)
-ld:                 tr= R0 | *(ar + value11)
-ldi:                tr= R0 | (R0 + value15)
-xorih:              tr= tr | (R0 + value15 << 16)
-store:              *(ar + value11)= tr | (R0 << value11)
-SPECIAL:            tr= *(ar + 0); if(tr == lr) *(ar + 0)= (rr + 0);
+---------------                                                   target  left  op   right  shop  value    rd_mem  wr_mem
+immediate right source:  tr= lr op (R0 + value12)                 tr      lr    op   R0     +     value12  0       0
+register right source:   tr= lr op (rr shop value5)               tr      lr    op   rr     shop  value5   0       0
+ldi:                     tr= R0 | (R0 + value15)                  tr      R0    |    R0     +     value15  0       0
+xorih:                   tr= tr xor (R0 + value15 << 16)          tr      tr    xor  R0     +     v15<<16  0       0
+ld:                      tr= *(lr + value11)                      tr      lr         R0     <<    value11  1       0
+store:                   *(tr + value11)= lr                      tr      lr         R0     <<    value11  0       1
+SPECIAL:                 tr= *lr;                                 tr      lr    |    R0     <<    cr       1       1
+                         if(tr == cr) *(lr + 0)= rr | (R0 << 0);  lr      rr    |    R0     <<    cr       1       1

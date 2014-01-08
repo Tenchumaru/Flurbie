@@ -11,39 +11,39 @@ module decode(
 	logic[3:0] cnvz_mask; // 30-27
 	logic[3:0] raw_operation; // 26-23
 	regind_t target_register;  // 22-18
-	logic is_register; // 17
-	regind_t sr1; // 16-12
+	logic is_not_immediate; // 17
+	regind_t raw_left_register; // 16-12
 	logic[11:0] immediate_operand; // 11-0
-	regind_t sr2; // 11-7
+	regind_t raw_right_register; // 11-7
 	logic[1:0] raw_adjustment_operation; // 6-5
 	logic[4:0] raw_adjustment_value; // 4-0
-	logic[1:0] memory_operation; // 17-16
-	regind_t raw_address_register; // 15-11
-	logic[10:0] address_offset; // 10-0
+	logic is_xorih; // 16
 	logic[15:0] immediate_value; // 15-0
-	regind_t exchange_address_register; // 6-2
+	logic is_store; // 11
+	logic[10:0] address_offset; // 10-0
+	regind_t compare_register; // 6-2
 
 	// Extract all of the possible signals from the instruction.
 	assign is_non_zero_active= ini.instruction[31];
 	assign cnvz_mask= ini.instruction[30:27];
 	assign raw_operation= ini.instruction[26:23];
 	assign target_register= ini.instruction[22:18];
-	assign is_register= ini.instruction[17];
-	assign sr1= ini.instruction[16:12];
+	assign is_not_immediate= ini.instruction[17];
+	assign raw_left_register= ini.instruction[16:12];
 	assign immediate_operand= ini.instruction[11:0];
-	assign sr2= ini.instruction[11:7];
+	assign raw_right_register= ini.instruction[11:7];
 	assign raw_adjustment_operation= ini.instruction[6:5];
 	assign raw_adjustment_value= ini.instruction[4:0];
-	assign memory_operation= ini.instruction[17:16];
-	assign raw_address_register= ini.instruction[15:11];
-	assign address_offset= ini.instruction[10:0];
+	assign is_xorih= ini.instruction[16];
 	assign immediate_value= ini.instruction[15:0];
-	assign exchange_address_register= ini.instruction[6:2];
+	assign is_store= ini.instruction[11];
+	assign address_offset= ini.instruction[10:0];
+	assign compare_register= ini.instruction[6:2];
 
 	// Declare the derived signals.
 	logic is_reading_memory, is_writing_memory;
 	logic[3:0] operation;
-	regind_t left_register, right_register, address_register;
+	regind_t left_register, right_register;
 	logic[1:0] adjustment_operation;
 	regval_t adjustment_value;
 
@@ -52,51 +52,45 @@ module decode(
 		is_reading_memory= 0;
 		is_writing_memory= 0;
 		operation= raw_operation;
-		left_register= sr1;
-		right_register= sr2;
-		address_register= raw_address_register;
+		left_register= raw_left_register;
+		right_register= raw_right_register;
 		adjustment_operation= raw_adjustment_operation;
 		case(raw_operation)
 			14: begin
-				left_register= 0;
 				right_register= 0;
 				operation= 10; // OR
 				adjustment_operation= Add;
-				case(memory_operation)
-					0: begin
+				if(is_not_immediate) begin
+					adjustment_operation= Left;
+					adjustment_value= $signed(address_offset);
+					if(is_store) begin
+						// st
+						is_writing_memory= 1;
+					end else begin
 						// ld
 						is_reading_memory= 1;
-						adjustment_value= $signed(address_offset);
 					end
-					1: begin
-						// ldi
-						adjustment_value= $signed(immediate_value);
-					end
-					2: begin
+				end else begin
+					if(is_xorih) begin
 						// xorih
 						operation= 12; // XOR
 						left_register= target_register;
 						adjustment_value= {immediate_value[15:0], 16'h0};
+					end else begin
+						// ldi
+						left_register= 0;
+						adjustment_value= $signed(immediate_value);
 					end
-					3: begin
-						// store
-						is_writing_memory= 1;
-						left_register= target_register;
-						adjustment_operation= Left;
-						adjustment_value= $signed(address_offset);
-					end
-				endcase
+				end
 			end
 			15: begin
 				// cx
 				is_reading_memory= 1;
 				is_writing_memory= 1;
-				address_register= exchange_address_register;
-				adjustment_operation= Add;
-				adjustment_value= 0;
+				adjustment_value= compare_register;
 			end
 			default:
-				if(is_register) begin
+				if(is_not_immediate) begin
 					// When shifting, execute only uses the lower five bits.
 					adjustment_value= $signed(raw_adjustment_value);
 				end else begin
@@ -131,7 +125,6 @@ module decode(
 			outi.target_register <= target_register;
 			outi.left_register <= left_register;
 			outi.right_register <= right_register;
-			outi.address_register <= address_register;
 			outi.adjustment_operation <= adjustment_operation;
 			outi.adjustment_value <= adjustment_value;
 			outi.is_reading_memory <= is_reading_memory;

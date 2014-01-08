@@ -10,7 +10,8 @@ static std::map<std::string, int> the_map;
 static int ip;
 
 static int as_mem_op(int value) {
-	return value & (0xe06 << 15);
+	bool is_immediate= (value & (1 << 17)) == 0;
+	return value & ((14 << 23) | (1 << 17) | (is_immediate ? 1 << 16 : 1 << 11));
 }
 
 template<unsigned highest>
@@ -121,7 +122,7 @@ void add_from_memory(int operation, int target_register, int address_register, i
 		operation= 0x80000000;
 	} else if(is_in_bit_range<10>(adjustment)) {
 		operation |= target_register << 18;
-		operation |= address_register << 11;
+		operation |= address_register << 12;
 		operation |= as_field<10, 0>(adjustment);
 	} else {
 		fprintf(stderr, "invalid adjustment %d\n", adjustment);
@@ -132,10 +133,11 @@ void add_from_memory(int operation, int target_register, int address_register, i
 }
 
 void add_immediate(int operation, int target_register, int value) {
-	if(as_mem_op(operation) != LDI && as_mem_op(operation) != XORIH) {
+	int mem_op= as_mem_op(operation);
+	if(mem_op != LDI && mem_op != XORIH) {
 		fprintf(stderr, "invalid immediate operation %#x\n", operation);
 		operation= 0x80000000;
-	} else if(as_mem_op(operation) == LDI ? is_in_bit_range<15>(value) : static_cast<unsigned>(value) < (1 << 16)) {
+	} else if(mem_op == LDI ? is_in_bit_range<15>(value) : static_cast<unsigned>(value) < (1 << 16)) {
 		operation |= target_register << 18;
 		operation |= as_field<15, 0>(value);
 	} else {
@@ -151,8 +153,8 @@ void add_to_memory(int operation, int address_register, int adjustment, int sour
 		fprintf(stderr, "invalid store operation %#x\n", operation);
 		operation= 0x80000000;
 	} else if(is_in_bit_range<10>(adjustment)) {
-		operation |= source_register << 18;
-		operation |= address_register << 11;
+		operation |= address_register << 18;
+		operation |= source_register << 12;
 		operation |= as_field<10, 0>(adjustment);
 	} else {
 		fprintf(stderr, "invalid adjustment %d\n", adjustment);
@@ -168,9 +170,9 @@ void add_special(int operation, int target_register, int address_register, int c
 		operation= 0x80000000;
 	} else {
 		operation |= target_register << 18;
-		operation |= compare_register << 12;
+		operation |= address_register << 12;
 		operation |= source_register << 7;
-		operation |= address_register << 2;
+		operation |= compare_register << 2;
 	}
 	fprintf(yyout, "0x%08x 0x%08x\n", ip, operation);
 	ip += 4;

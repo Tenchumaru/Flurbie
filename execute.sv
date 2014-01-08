@@ -64,7 +64,7 @@ module execute(
 			12: output_value= ini.left_value ^ adjusted_value;
 			13: output_value= ~(ini.left_value ^ adjusted_value);
 			14: output_value= ini.left_value;
-			15: output_value= ini.adjustment_value;
+			15: output_value= ini.left_value;
 		endcase
 		is_negative= output_value[31];
 		case(ini.operation)
@@ -74,12 +74,15 @@ module execute(
 			2, 3:
 				has_overflow= (ini.left_value[31] && !adjusted_value[31] && !output_value[31])
 					|| (!ini.left_value[31] && adjusted_value[31] && output_value[31]);
+			4:
+				has_overflow= (ini.left_value[31] && adjusted_value[31] && output_value[31])
+					|| (ini.left_value != 0 && adjusted_value != 0 && output_value == 0);
 			6, 7:
 				has_overflow= adjusted_value == 0;
 			default:
 				has_overflow= 0;
 		endcase
-		is_zero= is_special(ini.operation) ? ini.left_value == ini.right_value : output_value == 0;
+		is_zero= is_special(ini.operation) ? ini.left_value == ini.adjustment_value : output_value == 0;
 	end
 
 	// next state logic
@@ -96,11 +99,16 @@ module execute(
 		end else if(is_special(ini.operation) && !is_zero) begin
 			target_register= 0;
 		end else begin
+			// TODO:  this isn't correct for special operations.  I need to
+			// write both memory and a register.  Add the address register to
+			// the execute-to-write interface.  If not also writing a register,
+			// set the target register to zero.  Remove the is_writing_memory
+			// check from the register value logic.
 			target_register= ini.address_register;
 			is_writing_memory= 1;
 		end
 		adjustment_value= is_special(ini.operation) ? 0 : ini.adjustment_value;
-		// Delay if performing a divide or modulo operation.
+		// Delay if performing a divide operation.
 		if(flow_in.is_valid && ini.operation[3:1] == 3) begin
 			next_delay= delay ? delay << 1 : 2'b1;
 		end else begin

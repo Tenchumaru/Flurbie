@@ -73,7 +73,7 @@ endinterface
 
 interface i_decode_to_read();
 	regval_t pc, adjustment_value;
-	regind_t target_register, left_register, right_register, address_register;
+	regind_t target_register, left_register, right_register;
 	logic[3:0] cnvz_mask, operation;
 	logic[1:0] adjustment_operation;
 	logic is_non_zero_active, has_flushed, early_flush, is_reading_memory, is_writing_memory;
@@ -81,7 +81,7 @@ interface i_decode_to_read();
 	modport decode_out(
 		input early_flush,
 		output pc, adjustment_value,
-		output target_register, left_register, right_register, address_register,
+		output target_register, left_register, right_register,
 		output cnvz_mask, operation,
 		output adjustment_operation,
 		output is_non_zero_active, has_flushed, is_reading_memory, is_writing_memory
@@ -89,7 +89,7 @@ interface i_decode_to_read();
 
 	modport read_in(
 		input pc, adjustment_value,
-		input target_register, left_register, right_register, address_register,
+		input target_register, left_register, right_register,
 		input cnvz_mask, operation,
 		input adjustment_operation,
 		input is_non_zero_active, has_flushed, is_reading_memory, is_writing_memory,

@@ -10,7 +10,7 @@ static char const* operations[]= {
 };
 
 static char const* mem_operations[]= {
-	"ld", "ldi", "xorih", "st"
+	"ldi", "xorih", "ld", "st"
 };
 
 template<unsigned highest, unsigned lowest>
@@ -60,7 +60,9 @@ int main(int argc, char* argv[]) {
 			fout << "nop";
 		else {
 			unsigned operation= extract_field<26, 23>(value);
-			unsigned mem_operation= extract_field<17, 16>(value);
+			int is_memory= extract_field<17>(value);
+			int is_not_load= is_memory ? extract_field<11>(value) : extract_field<16>(value);
+			unsigned mem_operation= (is_memory << 1) | is_not_load;
 			if(operation == 14) {
 				// MEM
 				fout << mem_operations[mem_operation];
@@ -83,42 +85,42 @@ int main(int argc, char* argv[]) {
 			fout << ' ';
 			if(operation == 14) {
 				// MEM
-				unsigned r= extract_field<22, 18>(value);
+				unsigned tr= extract_field<22, 18>(value);
 				if(mem_operation == 0) {
-					// ld
-					unsigned ar= extract_field<15, 11>(value);
-					signed adjustment= extract_signed<10>(value);
-					fout << 'r' << r << ", [r" << ar << ", " << adjustment << "]";
-				} else if(mem_operation == 1) {
 					// ldi
 					signed immediate_value= extract_signed<15>(value);
-					fout << 'r' << r << ", " << immediate_value;
-				} else if(mem_operation == 2) {
-					// ori
+					fout << 'r' << tr << ", " << immediate_value;
+				} else if(mem_operation == 1) {
+					// xorih
 					unsigned immediate_value= extract_field<15, 0>(value);
-					fout << 'r' << r << ", " << immediate_value;
+					fout << 'r' << tr << ", " << immediate_value;
+				} else if(mem_operation == 2) {
+					// ld
+					unsigned lr= extract_field<16, 12>(value);
+					signed adjustment= extract_signed<10>(value);
+					fout << 'r' << tr << ", [r" << lr << ", " << adjustment << "]";
 				} else if(mem_operation == 3) {
 					// st
-					unsigned ar= extract_field<15, 11>(value);
+					unsigned lr= extract_field<16, 12>(value);
 					signed adjustment= extract_signed<10>(value);
-					fout << "[r" << ar << ", " << adjustment << "], r" << r;
+					fout << "[r" << tr << ", " << adjustment << "], r" << lr;
 				}
 			} else if(operation == 15) {
 				// SPECIAL
-				unsigned dr= extract_field<22, 18>(value);
-				unsigned sr1= extract_field<16, 12>(value);
-				unsigned sr2= extract_field<11, 7>(value);
-				unsigned ar= extract_field<6, 2>(value);
-				fout << 'r' << dr << ", [r" << ar << "], r" << sr1 << ", r" << sr2;
+				unsigned tr= extract_field<22, 18>(value);
+				unsigned lr= extract_field<16, 12>(value);
+				unsigned rr= extract_field<11, 7>(value);
+				unsigned cr= extract_field<6, 2>(value);
+				fout << 'r' << tr << ", [r" << lr << "], r" << cr << ", r" << rr;
 			} else {
 				// STANDARD
-				unsigned dr= extract_field<22, 18>(value);
+				unsigned tr= extract_field<22, 18>(value);
 				bool is_register= extract_field<17>(value);
-				unsigned sr1= extract_field<16, 12>(value);
+				unsigned lr= extract_field<16, 12>(value);
 				if(is_register) {
-					unsigned sr2= extract_field<11, 7>(value);
+					unsigned rr= extract_field<11, 7>(value);
 					unsigned shift_operation= extract_field<6, 5>(value);
-					fout << 'r' << dr << ", r" << sr1 << ", r" << sr2;
+					fout << 'r' << tr << ", r" << lr << ", r" << rr;
 					unsigned adjustment= extract_field<4, 0>(value);
 					if(adjustment != 0) {
 						switch(shift_operation) {
@@ -138,7 +140,7 @@ int main(int argc, char* argv[]) {
 					}
 				} else {
 					// immediate operand
-					fout << 'r' << dr << ", r" << sr1 << ", " << extract_signed<11>(value);
+					fout << 'r' << tr << ", r" << lr << ", " << extract_signed<11>(value);
 				}
 			}
 		}
