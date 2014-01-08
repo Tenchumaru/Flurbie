@@ -9,53 +9,44 @@ module decode(
 	// Declare all of the possible signals in the instruction.
 	logic is_non_zero_active; // 31
 	logic[3:0] cnvz_mask; // 30-27
-	logic[3:0] raw_operation; // 26-23
+	logic[3:0] operation; // 26-23
 	regind_t target_register;  // 22-18
 	logic is_not_immediate; // 17
-	regind_t raw_left_register; // 16-12
+	regind_t left_register; // 16-12
 	logic[11:0] immediate_operand; // 11-0
-	regind_t raw_right_register; // 11-7
-	logic[1:0] raw_adjustment_operation; // 6-5
-	logic[4:0] raw_adjustment_value; // 4-0
+	regind_t right_register; // 11-7
+	logic[1:0] adjustment_operation; // 6-5
+	regval_t adjustment_value; // 4-0
 	logic is_xorih; // 16
 	logic[15:0] immediate_value; // 15-0
 	logic is_store; // 11
 	logic[10:0] address_offset; // 10-0
 	regind_t compare_register; // 6-2
 
-	// Extract all of the possible signals from the instruction.
-	assign is_non_zero_active= ini.instruction[31];
-	assign cnvz_mask= ini.instruction[30:27];
-	assign raw_operation= ini.instruction[26:23];
-	assign target_register= ini.instruction[22:18];
-	assign is_not_immediate= ini.instruction[17];
-	assign raw_left_register= ini.instruction[16:12];
-	assign immediate_operand= ini.instruction[11:0];
-	assign raw_right_register= ini.instruction[11:7];
-	assign raw_adjustment_operation= ini.instruction[6:5];
-	assign raw_adjustment_value= ini.instruction[4:0];
-	assign is_xorih= ini.instruction[16];
-	assign immediate_value= ini.instruction[15:0];
-	assign is_store= ini.instruction[11];
-	assign address_offset= ini.instruction[10:0];
-	assign compare_register= ini.instruction[6:2];
-
 	// Declare the derived signals.
 	logic is_reading_memory, is_writing_memory;
-	logic[3:0] operation;
-	regind_t left_register, right_register;
-	logic[1:0] adjustment_operation;
-	regval_t adjustment_value;
 
-	// Set derived signals.
+	// Extract all of the possible signals from the instruction and set the
+	// derived signals.
 	always_comb begin
+		is_non_zero_active= ini.instruction[31];
+		cnvz_mask= ini.instruction[30:27];
+		operation= ini.instruction[26:23];
+		target_register= ini.instruction[22:18];
+		is_not_immediate= ini.instruction[17];
+		left_register= ini.instruction[16:12];
+		immediate_operand= ini.instruction[11:0];
+		right_register= ini.instruction[11:7];
+		adjustment_operation= ini.instruction[6:5];
+		adjustment_value= ini.instruction[4:0];
+		is_xorih= ini.instruction[16];
+		immediate_value= ini.instruction[15:0];
+		is_store= ini.instruction[11];
+		address_offset= ini.instruction[10:0];
+		compare_register= ini.instruction[6:2];
 		is_reading_memory= 0;
 		is_writing_memory= 0;
-		operation= raw_operation;
-		left_register= raw_left_register;
-		right_register= raw_right_register;
-		adjustment_operation= raw_adjustment_operation;
-		case(raw_operation)
+		case(operation)
 			14: begin
 				right_register= 0;
 				operation= 10; // OR
@@ -92,7 +83,7 @@ module decode(
 			default:
 				if(is_not_immediate) begin
 					// When shifting, execute only uses the lower five bits.
-					adjustment_value= $signed(raw_adjustment_value);
+					adjustment_value= $signed(adjustment_value);
 				end else begin
 					right_register= 0;
 					adjustment_operation= Add;

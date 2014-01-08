@@ -52,11 +52,13 @@ module execute(
 			end
 			6: begin
 				has_upper_value= 1;
-				{upper_value, output_value}= {remainder, quotient};
+				output_value= quotient;
+				upper_value= remainder;
 			end
 			7: begin
 				has_upper_value= 1;
-				{upper_value, output_value}= {uremainder, uquotient};
+				output_value= uquotient;
+				upper_value= uremainder;
 			end
 			8: output_value= ini.left_value & adjusted_value;
 			9: output_value= ~(ini.left_value & adjusted_value);
@@ -67,7 +69,8 @@ module execute(
 			14: output_value= ini.left_value;
 			15: if(is_special_match) begin
 					has_upper_value= 1;
-					{upper_value, output_value}= {ini.left_value, ini.right_value};
+					output_value= ini.right_value;
+					upper_value= ini.left_value;
 				end else begin
 					output_value= ini.left_value;
 				end
@@ -102,15 +105,12 @@ module execute(
 		target_register= ini.target_register;
 		address_register= ini.address_register;
 		adjustment_value= ini.adjustment_value;
-		is_writing_memory= 0;
+		is_writing_memory= ini.is_writing_memory;
 		if(is_special(ini.operation)) begin
 			adjustment_value= 0;
-			if(is_special_match) begin
-				is_writing_memory= 1;
-			end
+			is_writing_memory= is_special_match;
 		end else if(ini.is_writing_memory) begin
 			address_register= ini.target_register;
-			is_writing_memory= 1;
 		end
 		// Delay if performing a divide operation.
 		if(flow_in.is_valid && ini.operation[3:1] == 3) begin
