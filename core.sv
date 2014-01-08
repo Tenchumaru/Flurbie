@@ -64,6 +64,7 @@ module core(
 		.flow_out(flow_etw.out),
 		.ini(the_rte.execute_in),
 		.outi(the_etw.execute_out),
+		.write_feedback(write_feedback.in),
 		.feedback(execute_feedback.out)
 	);
 

@@ -14,7 +14,7 @@ module read(
 
 	// next state logic
 	regfile_t input_registers;
-	regval_t left_register_value, left_value, right_value, adjustment_value;
+	regval_t left_value, right_value, adjustment_value;
 	logic masked_flags, is_active, is_inactive, is_reading_memory, is_delaying, is_valid, has_flushed;
 	always_comb begin : next_state_logic
 		input_registers= registers;
@@ -22,12 +22,13 @@ module read(
 		masked_flags= |(ini.cnvz_mask & outi.flags);
 		is_active= flow_in.is_valid && ini.is_non_zero_active == masked_flags;
 		is_inactive= flow_in.is_valid && ini.is_non_zero_active != masked_flags;
-		left_register_value= write_feedback.get_r_value(ini.left_register, input_registers);
-		left_register_value= execute_feedback.get_d_value(ini.left_register, left_register_value);
-		// TODO:  if the memory this stage wants to read is the target of an
-		// instruction currently in the execute or write stages, I want to use
-		// one of those values instead of reading memory.
-		left_value= ini.is_reading_memory ? data : left_register_value;
+		if(ini.is_reading_memory) begin
+			left_value= write_feedback.get_memory(address, data);
+			left_value= execute_feedback.get_memory(address, left_value);
+		end else begin
+			left_value= write_feedback.get_r_value(ini.left_register, input_registers);
+			left_value= execute_feedback.get_d_value(ini.left_register, left_value);
+		end
 		right_value= write_feedback.get_r_value(ini.right_register, input_registers);
 		right_value= execute_feedback.get_d_value(ini.right_register, right_value);
 		if(is_special(ini.operation)) begin
@@ -41,7 +42,8 @@ module read(
 		end else begin
 			adjustment_value= ini.adjustment_value;
 		end
-		is_reading_memory= is_active && ini.is_reading_memory;
+		is_reading_memory= is_active && ini.is_reading_memory &&
+			!execute_feedback.has_memory(address) && !write_feedback.has_memory(address);
 		// Read needs to wait for memory to respond.
 		is_delaying= is_reading_memory && !data_valid;
 		is_valid= !is_delaying && is_active;

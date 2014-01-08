@@ -27,20 +27,20 @@ interface i_flow_control(input logic clock, reset_n);
 endinterface
 
 interface i_feedback();
-	regval_t value, upper_value;
+	regval_t value, upper_value, address;
 	regind_t index;
-	logic is_valid, has_upper_value;
+	logic is_valid, has_upper_value, is_writing_memory;
 
-	modport in(input value, upper_value, index, is_valid, has_upper_value,
-		import get_d_value, import get_r_value);
-	modport out(output value, upper_value, index, is_valid, has_upper_value);
+	modport in(input value, upper_value, address, index, is_valid, has_upper_value, is_writing_memory,
+		import get_d_value, import get_r_value, import has_memory, import get_memory);
+	modport out(output value, upper_value, address, index, is_valid, has_upper_value, is_writing_memory);
 
 	function regval_t get_d_value(regind_t desired_register, regval_t default_value);
 		logic is_useable;
 		is_useable= is_valid && desired_register != 0;
-		return is_useable && desired_register == index ?
+		return is_useable && !is_writing_memory && desired_register == index ?
 			value :
-			is_useable && has_upper_value && desired_register == index + 1 ?
+			is_useable && has_upper_value && desired_register == (is_writing_memory ? index : index + 1) ?
 			upper_value :
 			default_value;
 	endfunction
@@ -48,11 +48,21 @@ interface i_feedback();
 	function regval_t get_r_value(regind_t desired_register, regfile_t registers);
 		logic is_useable;
 		is_useable= is_valid && desired_register != 0;
-		return is_useable && desired_register == index ?
+		return is_useable && !is_writing_memory && desired_register == index ?
 			value :
-			is_useable && has_upper_value && desired_register == index + 1 ?
+			is_useable && has_upper_value && desired_register == (is_writing_memory ? index : index + 1) ?
 			upper_value :
 			registers[desired_register];
+	endfunction
+
+	function logic has_memory(regval_t desired_address);
+		return is_valid && is_writing_memory && desired_address == address;
+	endfunction
+
+	function regval_t get_memory(regval_t desired_address, regval_t default_value);
+		return is_valid && is_writing_memory && desired_address == address ?
+			value :
+			default_value;
 	endfunction
 endinterface
 

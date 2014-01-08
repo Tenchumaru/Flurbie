@@ -4,6 +4,7 @@ module execute(
 	i_flow_control.out flow_out,
 	i_read_to_execute.execute_in ini,
 	i_execute_to_write.execute_out outi,
+	i_feedback.in write_feedback,
 	i_feedback.out feedback
 );
 
@@ -29,10 +30,12 @@ module execute(
 	udiv the_udiv(.numer(ini.left_value), .denom(adjusted_value), .quotient(uquotient), .remain(uremainder));
 
 	// Compute and select the operation results.
+	regval_t flags_register;
 	logic input_carry, has_carry, is_negative, has_overflow, is_zero, has_upper_value, is_special_match;
 	regval_t output_value, upper_value;
 	always_comb begin
-		input_carry= registers[Flags][30];
+		flags_register= write_feedback.get_r_value(Flags, registers);
+		input_carry= flags_register[30];
 		has_carry= 0;
 		has_upper_value= 0;
 		upper_value= 0;
@@ -152,8 +155,10 @@ module execute(
 		feedback.value= output_value;
 		feedback.upper_value= upper_value;
 		feedback.index= target_register;
-		feedback.is_valid= is_valid && !is_writing_memory;
+		feedback.is_valid= is_valid;
 		feedback.has_upper_value= has_upper_value;
+		feedback.address= write_feedback.get_r_value(address_register, registers) + adjustment_value;
+		feedback.is_writing_memory= is_writing_memory;
 	end : output_logic
 
 endmodule

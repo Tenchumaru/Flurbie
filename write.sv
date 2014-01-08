@@ -77,14 +77,10 @@ module write(
 		feedback.value= ini.target_value;
 		feedback.upper_value= ini.upper_value;
 		feedback.index= ini.target_register;
-		if(ini.is_writing_memory && ini.has_upper_value) begin
-			feedback.value= ini.upper_value;
-			feedback.is_valid= flow_in.is_valid;
-			feedback.has_upper_value= 0;
-		end else begin
-			feedback.is_valid= flow_in.is_valid && !ini.is_writing_memory;
-			feedback.has_upper_value= ini.has_upper_value;
-		end
+		feedback.is_valid= flow_in.is_valid;
+		feedback.has_upper_value= ini.has_upper_value;
+		feedback.address= address;
+		feedback.is_writing_memory= ini.is_writing_memory;
 	end : output_logic
 
 endmodule
