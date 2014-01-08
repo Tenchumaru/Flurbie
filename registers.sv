@@ -125,19 +125,19 @@ endinterface
 
 interface i_execute_to_write();
 	regval_t pc, adjustment_value, target_value, upper_value;
-	regind_t target_register;
+	regind_t target_register, address_register;
 	logic[3:0] flags;
 	logic has_flushed, is_writing_memory, has_upper_value;
 
 	modport execute_out(
 		output pc, adjustment_value, target_value, upper_value,
-		output target_register,
+		output target_register, address_register,
 		output flags,
 		output has_flushed, is_writing_memory, has_upper_value
 	);
 	modport write_in(
 		input pc, adjustment_value, target_value, upper_value,
-		input target_register,
+		input target_register, address_register,
 		input flags,
 		input has_flushed, is_writing_memory, has_upper_value
 	);

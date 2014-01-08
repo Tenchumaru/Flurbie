@@ -29,13 +29,14 @@ module execute(
 	udiv the_udiv(.numer(ini.left_value), .denom(adjusted_value), .quotient(uquotient), .remain(uremainder));
 
 	// Compute and select the operation results.
-	logic input_carry, has_carry, is_negative, has_overflow, is_zero, has_upper_value;
+	logic input_carry, has_carry, is_negative, has_overflow, is_zero, has_upper_value, is_special_match;
 	regval_t output_value, upper_value;
 	always_comb begin
 		input_carry= registers[Flags][30];
 		has_carry= 0;
 		has_upper_value= 0;
 		upper_value= 0;
+		is_special_match= ini.left_value == ini.adjustment_value;
 		case(ini.operation)
 			0: {has_carry, output_value}= ini.left_value + adjusted_value;
 			1: {has_carry, output_value}= ini.left_value + adjusted_value + input_carry;
@@ -64,7 +65,12 @@ module execute(
 			12: output_value= ini.left_value ^ adjusted_value;
 			13: output_value= ~(ini.left_value ^ adjusted_value);
 			14: output_value= ini.left_value;
-			15: output_value= ini.left_value;
+			15: if(is_special_match) begin
+					has_upper_value= 1;
+					{upper_value, output_value}= {ini.left_value, ini.right_value};
+				end else begin
+					output_value= ini.left_value;
+				end
 		endcase
 		is_negative= output_value[31];
 		case(ini.operation)
@@ -82,32 +88,30 @@ module execute(
 			default:
 				has_overflow= 0;
 		endcase
-		is_zero= is_special(ini.operation) ? ini.left_value == ini.adjustment_value : output_value == 0;
+		is_zero= is_special(ini.operation) ? is_special_match : output_value == 0;
 	end
 
 	// next state logic
 	logic[3:0] flags;
-	regind_t target_register;
+	regind_t target_register, address_register;
 	regval_t adjustment_value;
 	logic[2:0] delay, next_delay;
 	logic is_writing_memory, is_delaying, is_valid;
 	always_comb begin : next_state_logic
 		flags= {has_carry, is_negative, has_overflow, is_zero};
+		target_register= ini.target_register;
+		address_register= ini.address_register;
+		adjustment_value= ini.adjustment_value;
 		is_writing_memory= 0;
-		if(!ini.is_writing_memory) begin
-			target_register= ini.target_register;
-		end else if(is_special(ini.operation) && !is_zero) begin
-			target_register= 0;
-		end else begin
-			// TODO:  this isn't correct for special operations.  I need to
-			// write both memory and a register.  Add the address register to
-			// the execute-to-write interface.  If not also writing a register,
-			// set the target register to zero.  Remove the is_writing_memory
-			// check from the register value logic.
-			target_register= ini.address_register;
+		if(is_special(ini.operation)) begin
+			adjustment_value= 0;
+			if(is_special_match) begin
+				is_writing_memory= 1;
+			end
+		end else if(ini.is_writing_memory) begin
+			address_register= ini.target_register;
 			is_writing_memory= 1;
 		end
-		adjustment_value= is_special(ini.operation) ? 0 : ini.adjustment_value;
 		// Delay if performing a divide operation.
 		if(flow_in.is_valid && ini.operation[3:1] == 3) begin
 			next_delay= delay ? delay << 1 : 2'b1;
@@ -129,6 +133,7 @@ module execute(
 				flow_out.is_valid <= is_valid;
 				outi.pc <= ini.pc;
 				outi.target_register <= target_register;
+				outi.address_register <= address_register;
 				outi.is_writing_memory <= is_writing_memory;
 				outi.flags <= flags;
 				outi.target_value <= output_value;
