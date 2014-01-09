@@ -71,19 +71,20 @@ module cpu(
 	);
 	assign DRAM_CLK= clock;
 
+	i_cache cache_a();
+	i_cache cache_b();
+
 	logic cache_address_enable;
 	regval_t cache_address;
 	logic cache_data_valid;
 	regval_t cache_data;
-	cache#(6) the_cache(.clock, .reset_n,
-		.input_address_enable(ia_enable),
-		.input_address(ia),
-		.output_address_enable(cache_address_enable),
-		.output_address(cache_address),
-		.input_data_valid(!instruction_data_ready_n),
-		.input_data(instruction_read_data),
-		.output_data_valid(cache_data_valid),
-		.output_data(cache_data)
+	cache#(9) the_cache(.clock, .reset_n,
+		.address_enable(cache_address_enable),
+		.address(cache_address),
+		.data_valid(!instruction_data_ready_n),
+		.data(instruction_read_data),
+		.a(cache_a.impl),
+		.b(cache_b.impl)
 	);
 
 	logic ia_enable, iv_valid, da_in_enable, dv_in_valid, da_out_enable, dv_out_valid;
@@ -94,14 +95,18 @@ module cpu(
 		.da_in, .da_in_enable, .dv_in, .dv_in_valid,
 		.da_out, .da_out_enable, .dv_out, .dv_out_valid
 	);
+	assign cache_a.client.address_enable= ia_enable;
+	assign cache_a.client.address= ia;
+	assign cache_b.client.address_enable= 0;
+	assign cache_b.client.address= 0;
 
 	// instruction
 	always_comb begin
 		if(SW[3] & SW[0]) begin
 			instruction_read_n= !cache_address_enable;
 			instruction_read_address= {cache_address[24:2], 2'h0};
-			iv= cache_data;
-			iv_valid= cache_data_valid;
+			iv= cache_a.data;
+			iv_valid= cache_a.data_valid;
 		end else begin
 			instruction_read_n= !ia_enable;
 			instruction_read_address= {ia[24:2], 2'h0};

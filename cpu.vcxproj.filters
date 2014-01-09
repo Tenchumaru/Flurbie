@@ -125,6 +125,12 @@
     </None>
     <None Include="LICENSE" />
     <None Include="README.md" />
+    <None Include="ram2.qip">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="ram2.v">
+      <Filter>Generated Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
