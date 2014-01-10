@@ -48,8 +48,8 @@ eda: $(OUTPUT_DIR)/$(PROJECT).eda.rpt
 # Executable Configuration
 ###############################################################################
 
-#IPC_ARGS=--ipc_flow=14 --ipc_mode
-IPC_ARGS=
+IPC_ARGS=--ipc_flow=14 --ipc_mode
+#IPC_ARGS=
 MAP_ARGS=$(IPC_ARGS) --smart --read_settings_files=on --write_settings_files=off "$(PROJECT)" -c
 FIT_ARGS=$(IPC_ARGS) --smart --read_settings_files=off --write_settings_files=off "$(PROJECT)" -c
 ASM_ARGS=$(IPC_ARGS) --smart --read_settings_files=off --write_settings_files=off "$(PROJECT)" -c
@@ -66,9 +66,9 @@ $(PROJECT).qsf: $(PROJECT).vcxproj
 
 "$(Configuration)/stp": $(ASSIGNMENT_FILES) $(SOURCE_FILES)
 !IF "$(Configuration)" == "Pre-release" || "$(Configuration)" == "Release"
-	quartus_stp $(PROJECT) --signaltap --stp_file $(PROJECT).stp --disable
+	quartus_stp $(IPC_ARGS) $(PROJECT) --signaltap --stp_file $(PROJECT).stp --disable | cscript ..\ipc.js quartus_stp
 !ELSE
-	quartus_stp $(PROJECT) --signaltap --stp_file $(PROJECT).stp --enable
+	quartus_stp $(IPC_ARGS) $(PROJECT) --signaltap --stp_file $(PROJECT).stp --enable | cscript ..\ipc.js quartus_stp
 !ENDIF
 	ECHO stp > $@
 !IF "$(Configuration)" == "Pre-debug"
@@ -80,16 +80,16 @@ $(PROJECT).qsf: $(PROJECT).vcxproj
 !ENDIF
 
 $(OUTPUT_DIR)/$(PROJECT).map.rpt: "$(Configuration)/stp"
-	quartus_map $(MAP_ARGS) $(PROJECT)
+	quartus_map $(MAP_ARGS) $(PROJECT) | cscript ..\ipc.js quartus_map
 
 $(OUTPUT_DIR)/$(PROJECT).fit.rpt: $(OUTPUT_DIR)/$(PROJECT).map.rpt
-	quartus_fit $(FIT_ARGS) $(PROJECT)
+	quartus_fit $(FIT_ARGS) $(PROJECT) | cscript ..\ipc.js quartus_fit
 
 $(OUTPUT_DIR)/$(PROJECT).asm.rpt: $(OUTPUT_DIR)/$(PROJECT).fit.rpt
-	quartus_asm $(ASM_ARGS) $(PROJECT)
+	quartus_asm $(ASM_ARGS) $(PROJECT) | cscript ..\ipc.js quartus_asm
 
 $(OUTPUT_DIR)/$(PROJECT).sta.rpt: $(OUTPUT_DIR)/$(PROJECT).fit.rpt
-	quartus_sta $(STA_ARGS) $(PROJECT)
+	quartus_sta $(STA_ARGS) $(PROJECT) | cscript ..\ipc.js quartus_sta
 
 $(OUTPUT_DIR)/$(PROJECT).eda.rpt: $(OUTPUT_DIR)/$(PROJECT).fit.rpt
-	quartus_eda $(EDA_ARGS) $(PROJECT)
+	quartus_eda $(EDA_ARGS) $(PROJECT) | cscript ..\ipc.js quartus_eda
