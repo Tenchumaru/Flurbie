@@ -66,11 +66,12 @@ EDA_ARGS=$(IPC_ARGS) --smart --read_settings_files=off --write_settings_files=of
 # Target implementations
 ###############################################################################
 
-$(PROJECT).qsf: $(PROJECT).vcxproj
-	COPY /Y $@ "$(Configuration)"
-	cscript ..\update_qsf.js $** $@
+output_files/vcxproj: $(PROJECT).vcxproj
+	COPY /Y $(PROJECT).qsf "$(Configuration)"
+	cscript ..\update_qsf.js $** $(PROJECT).qsf
+	ECHO vcxproj > $@
 
-"$(Configuration)/stp": $(ASSIGNMENT_FILES) $(SOURCE_FILES)
+"$(Configuration)/stp": $(ASSIGNMENT_FILES) $(SOURCE_FILES) output_files/vcxproj
 !IF "$(Configuration)" == "Pre-release" || "$(Configuration)" == "Release"
 	quartus_stp $(IPC_ARGS) $(PROJECT) --signaltap --stp_file $(PROJECT).stp --disable $(IPC_FILTER) quartus_stp
 !ELSE

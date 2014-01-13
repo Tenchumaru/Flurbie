@@ -108,25 +108,25 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Pre-release|Win32'">
-    <NMakeBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)"</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)" true</NMakeBuildCommandLine>
     <NMakeCleanCommandLine>nmake -nologo "Configuration=$(Configuration)" clean</NMakeCleanCommandLine>
-    <NMakeReBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)"</NMakeReBuildCommandLine>
+    <NMakeReBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)" true</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <ExecutablePath>C:\altera\13.1\quartus\bin64;C:\Users\Chris\Documents\bin;$(ExecutablePath)</ExecutablePath>
     <NMakeOutput>$(OutDir)$(ProjectName).sof</NMakeOutput>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <NMakeBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)"</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)" true</NMakeBuildCommandLine>
     <NMakeCleanCommandLine>nmake -nologo "Configuration=$(Configuration)" clean</NMakeCleanCommandLine>
-    <NMakeReBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)"</NMakeReBuildCommandLine>
+    <NMakeReBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)" true</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <ExecutablePath>C:\altera\13.1\quartus\bin64;C:\Users\Chris\Documents\bin;$(ExecutablePath)</ExecutablePath>
     <NMakeOutput>$(OutDir)$(ProjectName).sof</NMakeOutput>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Pre-debug|Win32'">
-    <NMakeBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)"</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)" true</NMakeBuildCommandLine>
     <NMakeCleanCommandLine>nmake -nologo "Configuration=$(Configuration)" clean</NMakeCleanCommandLine>
-    <NMakeReBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)"</NMakeReBuildCommandLine>
+    <NMakeReBuildCommandLine>"$(ProjectDir)..\make.cmd" "$(Configuration)" "$(ProjectPath)" true</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <ExecutablePath>C:\altera\13.1\quartus\bin64;C:\Users\Chris\Documents\bin;$(ExecutablePath)</ExecutablePath>
     <NMakeOutput>$(OutDir)$(ProjectName).sof</NMakeOutput>
