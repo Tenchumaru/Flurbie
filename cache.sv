@@ -21,7 +21,7 @@ module cache#(parameter N)(input clock, reset_n,
 	logic[N - 1:0] address_a, address_b;
 	logic wren_a, wren_b;
 	regval_t q_a, q_b;
-	ram2 lines(
+	ram2#(N) lines(
 		.aclr(!reset_n),
 		.clock(!clock),
 		.address_a,
