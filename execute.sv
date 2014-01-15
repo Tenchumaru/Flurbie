@@ -35,16 +35,14 @@ module execute(
 	regval_t output_value, upper_value;
 	always_comb begin
 		flags_register= write_feedback.get_r_value(Flags, registers);
-		input_carry= flags_register[30];
+		input_carry= flags_register[30] & ini.operation[0];
 		has_carry= 0;
 		has_upper_value= 0;
 		upper_value= 0;
 		is_special_match= ini.left_value == ini.adjustment_value;
 		case(ini.operation)
-			0: {has_carry, output_value}= ini.left_value + adjusted_value;
-			1: {has_carry, output_value}= ini.left_value + adjusted_value + input_carry;
-			2: {has_carry, output_value}= ini.left_value - adjusted_value;
-			3: {has_carry, output_value}= ini.left_value - adjusted_value - input_carry;
+			0, 1: {has_carry, output_value}= ini.left_value + adjusted_value + input_carry;
+			2, 3: {has_carry, output_value}= ini.left_value - adjusted_value - input_carry;
 			4: begin
 				has_upper_value= 1;
 				{upper_value, output_value}= $signed(ini.left_value) * $signed(adjusted_value);
