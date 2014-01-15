@@ -36,7 +36,7 @@
 // synopsys translate_off
 `timescale 1 ps / 1 ps
 // synopsys translate_on
-module ram2#(parameter N)(
+module ram2#(parameter N, M)(
 	aclr,
 	address_a,
 	address_b,
@@ -52,12 +52,12 @@ module ram2#(parameter N)(
 	input	[N - 1:0]  address_a;
 	input	[N - 1:0]  address_b;
 	input	  clock;
-	input	[31:0]  data_a;
-	input	[31:0]  data_b;
+	input	[M - 1:0]  data_a;
+	input	[M - 1:0]  data_b;
 	input	  wren_a;
 	input	  wren_b;
-	output	[31:0]  q_a;
-	output	[31:0]  q_b;
+	output	[M - 1:0]  q_a;
+	output	[M - 1:0]  q_b;
 `ifndef ALTERA_RESERVED_QIS
 // synopsys translate_off
 `endif
@@ -69,10 +69,10 @@ module ram2#(parameter N)(
 // synopsys translate_on
 `endif
 
-	wire [31:0] sub_wire0;
-	wire [31:0] sub_wire1;
-	wire [31:0] q_a = sub_wire0[31:0];
-	wire [31:0] q_b = sub_wire1[31:0];
+	wire [M - 1:0] sub_wire0;
+	wire [M - 1:0] sub_wire1;
+	wire [M - 1:0] q_a = sub_wire0[M - 1:0];
+	wire [M - 1:0] q_b = sub_wire1[M - 1:0];
 
 	altsyncram	altsyncram_component (
 				.clock0 (clock),
@@ -120,8 +120,8 @@ module ram2#(parameter N)(
 		altsyncram_component.read_during_write_mode_port_b = "NEW_DATA_NO_NBE_READ",
 		altsyncram_component.widthad_a = N,
 		altsyncram_component.widthad_b = N,
-		altsyncram_component.width_a = 32,
-		altsyncram_component.width_b = 32,
+		altsyncram_component.width_a = M,
+		altsyncram_component.width_b = M,
 		altsyncram_component.width_byteena_a = 1,
 		altsyncram_component.width_byteena_b = 1,
 		altsyncram_component.wrcontrol_wraddress_reg_b = "CLOCK0";
@@ -163,7 +163,7 @@ endmodule
 // Retrieval info: PRIVATE: JTAG_ID STRING "NONE"
 // Retrieval info: PRIVATE: MAXIMUM_DEPTH NUMERIC "0"
 // Retrieval info: PRIVATE: MEMSIZE NUMERIC "16384"
-// Retrieval info: PRIVATE: MEM_IN_BITS NUMERIC "1"
+// Retrieval info: PRIVATE: MEM_IN_BITS NUMERIC "0"
 // Retrieval info: PRIVATE: MIFfilename STRING ""
 // Retrieval info: PRIVATE: OPERATION_MODE NUMERIC "3"
 // Retrieval info: PRIVATE: OUTDATA_ACLR_B NUMERIC "1"
