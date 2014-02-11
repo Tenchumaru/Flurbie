@@ -36,8 +36,8 @@ module cache#(parameter N)(input clock, reset_n,
 
 	// next state logic
 	always_comb begin : next_state_logic
-		address_a= N'(a.address >> 2);
-		address_b= N'(b.address >> 2);
+		address_a= a.address[N + 1:2];
+		address_b= b.address[N + 1:2];
 		wren_a= a.address_enable && data_valid;
 		wren_b= 0;
 	end : next_state_logic
