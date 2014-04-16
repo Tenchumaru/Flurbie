@@ -83,9 +83,9 @@ r30 is IP (instruction pointer)
 r29 is SP (stack pointer; by convention)
 r28 is FP (frame pointer; by convention)
 r0 is always zero
-Supervisor mode has its own copies of r16 through r31.
-Consider having supervisor mode see user mode's r17 through r31 in its r1
-through r15 with its own copies of r16 through r31.  r0 is still always zero.
+Supervisor mode has its own copies of r16 through r30, sharing r31 with user mode.
+Consider having supervisor mode see user mode's r17 through r30 in its r1
+through r14 with its own copies of r15 through r30.  r0 is still always zero.
 
 Operation Forms
 ---------------                                                   target  left  op   right  shop  value    rd_mem  wr_mem
@@ -97,3 +97,78 @@ ld:                      tr= *(lr + value11)                      tr      lr    
 store:                   *(tr + value11)= lr                      tr      lr         R0     <<    value11  0       1
 SPECIAL:                 tr= *lr;                                 tr      lr    |    R0     <<    cr       1       1
                          if(tr == cr) *(lr + 0)= rr | (R0 << 0);  lr      rr    |    R0     <<    cr       1       1
+
+
+Translation and Caching
+-----------------------
+
+To cover 29 bits of address space, translate 14 bits and cache 15 bits.
+The cache line width is 8 words (256 bits).
+The top 5 bits of the rest of the 32 bits of address space must be zero.
+
+Translation:  16384 (2^14) words of memory and 14 bits per word.
+Caching:  1024 (2^10) words of memory and 273 (2^(5 + 3) + 32 - 10 - 5) bits per word.
+
+
+Other Instructions
+------------------
+
+ldd:    load double (load two registers with a 64-bit quantity)
+ldtt:   load translation table
+ldx:    load from exception register
+
+I can implement these as SPECIAL by having CX active if bit 17 is zero and the
+above selected by by bits 1 and 0 when bit 17 is one.  This leaves room for one
+more special instruction.
+
+A Possibly Simpler Alternative
+------------------------------
+
+Operation
+31-28    op code (add, addc, sub, subb, mul, umul, div, udiv, and, nand, or, nor, xor, xnor, cx, F)
+
+Destination
+27      0       register
+        1       memory
+26-22    register index (0-31)
+
+Source
+21      0       register
+        1       memory
+
+Register
+20      0       unconditional
+        1       conditional
+19-15           register index (0-31)
+14-10           register index (0-31)
+
+Unconditional
+9-8     shift operation
+        00      add -16 to 15
+        01      left
+        10      logical right
+        11      arithmetic right
+7-3     5-bit value (0-31)
+2-0     unused
+
+Conditional
+9       1       instruction active if CNVZ mask with CNVZ flags is non-zero
+        0       instruction active if CNVZ mask with CNVZ flags is zero
+8       C mask
+7       N mask
+6       V mask
+5       Z mask
+4-0     unused
+
+Memory
+20      0       instruction (immediate)
+        1       data (addressed)
+
+Instruction
+19      0       load low
+        1       load high
+18-0    19-bit signed value
+
+Data
+19-15   register index (0-31)
+14-0    13-bit signed value
