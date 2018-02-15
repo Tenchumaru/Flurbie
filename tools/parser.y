@@ -116,7 +116,7 @@ int pc_index= 30;
 
 static int usage(char const* prog) {
 	fprintf(stderr, "usage: %s [-p N] [input.s [output.hex]]\n", prog);
-	fprintf(stderr, "\t-p N\tset the PC register index to N (default 30)\n", prog);
+	fprintf(stderr, "\t-p N\tset the PC register index to N (default 30)\n");
 	return 2;
 }
 
