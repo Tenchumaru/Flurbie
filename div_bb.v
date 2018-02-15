@@ -1,4 +1,4 @@
-// megafunction wizard: %LPM_DIVIDE%
+// megafunction wizard: %LPM_DIVIDE%VBB%
 // GENERATION: STANDARD
 // VERSION: WM1.0
 // MODULE: LPM_DIVIDE 
@@ -17,7 +17,6 @@
 // 15.1.0 Build 185 10/21/2015 SJ Lite Edition
 // ************************************************************
 
-
 //Copyright (C) 1991-2015 Altera Corporation. All rights reserved.
 //Your use of Altera Corporation's design tools, logic functions 
 //and other software and tools, and its AMPP partner logic 
@@ -33,10 +32,6 @@
 //authorized distributors.  Please refer to the applicable 
 //agreement for further details.
 
-
-// synopsys translate_off
-`timescale 1 ps / 1 ps
-// synopsys translate_on
 module div (
 	denom,
 	numer,
@@ -47,28 +42,6 @@ module div (
 	input	[31:0]  numer;
 	output	[31:0]  quotient;
 	output	[31:0]  remain;
-
-	wire [31:0] sub_wire0;
-	wire [31:0] sub_wire1;
-	wire [31:0] quotient = sub_wire0[31:0];
-	wire [31:0] remain = sub_wire1[31:0];
-
-	lpm_divide	LPM_DIVIDE_component (
-				.denom (denom),
-				.numer (numer),
-				.quotient (sub_wire0),
-				.remain (sub_wire1),
-				.aclr (1'b0),
-				.clken (1'b1),
-				.clock (1'b0));
-	defparam
-		LPM_DIVIDE_component.lpm_drepresentation = "SIGNED",
-		LPM_DIVIDE_component.lpm_hint = "LPM_REMAINDERPOSITIVE=FALSE",
-		LPM_DIVIDE_component.lpm_nrepresentation = "SIGNED",
-		LPM_DIVIDE_component.lpm_type = "LPM_DIVIDE",
-		LPM_DIVIDE_component.lpm_widthd = 32,
-		LPM_DIVIDE_component.lpm_widthn = 32;
-
 
 endmodule
 

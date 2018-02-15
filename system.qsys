@@ -9,9 +9,6 @@
    categories="System" />
  <parameter name="bonusData"><![CDATA[bonusData 
 {
-   element $${FILENAME}
-   {
-   }
    element clk_0
    {
       datum _sortIndex
@@ -63,14 +60,23 @@
  <parameter name="generationId" value="0" />
  <parameter name="globalResetBus" value="false" />
  <parameter name="hdlLanguage" value="VERILOG" />
+ <parameter name="hideFromIPCatalog" value="false" />
+ <parameter name="lockedInterfaceDefinition" value="" />
  <parameter name="maxAdditionalLatency" value="1" />
  <parameter name="projectName" value="cpu.qpf" />
  <parameter name="sopcBorderPoints" value="false" />
  <parameter name="systemHash" value="0" />
+ <parameter name="testBenchDutName" value="" />
  <parameter name="timeStamp" value="0" />
  <parameter name="useTestBenchNamingPattern" value="false" />
  <instanceScript></instanceScript>
  <interface name="clk" internal="clk_0.clk_in" type="clock" dir="end" />
+ <interface
+   name="instruction"
+   internal="instruction_reader.wire"
+   type="conduit"
+   dir="end" />
+ <interface name="read_data" internal="data_reader.wire" type="conduit" dir="end" />
  <interface name="reset" internal="clk_0.clk_in_reset" type="reset" dir="end" />
  <interface
    name="sdram"
@@ -78,124 +84,112 @@
    type="conduit"
    dir="end" />
  <interface
-   name="instruction"
-   internal="instruction_reader.wire"
-   type="conduit"
-   dir="end" />
- <interface name="read_data" internal="data_reader.wire" type="conduit" dir="end" />
- <interface
    name="write_data"
    internal="data_writer.wire"
    type="conduit"
    dir="end" />
- <module kind="clock_source" version="13.1" enabled="1" name="clk_0">
+ <module name="clk_0" kind="clock_source" version="15.1" enabled="1">
   <parameter name="clockFrequency" value="50000000" />
   <parameter name="clockFrequencyKnown" value="true" />
   <parameter name="inputClockFrequency" value="0" />
   <parameter name="resetSynchronousEdges" value="NONE" />
  </module>
+ <module name="data_reader" kind="sdram_reader" version="1.0" enabled="1" />
+ <module name="data_writer" kind="sdram_writer" version="1.0" enabled="1" />
  <module
+   name="instruction_reader"
+   kind="sdram_reader"
+   version="1.0"
+   enabled="1" />
+ <module
+   name="new_sdram_controller_0"
    kind="altera_avalon_new_sdram_controller"
-   version="13.1"
-   enabled="1"
-   name="new_sdram_controller_0">
+   version="15.1"
+   enabled="1">
   <parameter name="TAC" value="5.5" />
+  <parameter name="TMRD" value="3" />
   <parameter name="TRCD" value="20.0" />
   <parameter name="TRFC" value="70.0" />
   <parameter name="TRP" value="20.0" />
   <parameter name="TWR" value="14.0" />
   <parameter name="casLatency" value="3" />
+  <parameter name="clockRate" value="50000000" />
   <parameter name="columnWidth" value="9" />
+  <parameter name="componentName">$${FILENAME}_new_sdram_controller_0</parameter>
   <parameter name="dataWidth" value="16" />
   <parameter name="generateSimulationModel" value="false" />
+  <parameter name="initNOPDelay" value="0.0" />
   <parameter name="initRefreshCommands" value="2" />
+  <parameter name="masteredTristateBridgeSlave" value="0" />
   <parameter name="model">single_Micron_MT48LC4M32B2_7_chip</parameter>
   <parameter name="numberOfBanks" value="4" />
   <parameter name="numberOfChipSelects" value="1" />
   <parameter name="pinsSharedViaTriState" value="false" />
   <parameter name="powerUpDelay" value="100.0" />
   <parameter name="refreshPeriod" value="15.625" />
-  <parameter name="rowWidth" value="13" />
-  <parameter name="masteredTristateBridgeSlave" value="0" />
-  <parameter name="TMRD" value="3" />
-  <parameter name="initNOPDelay" value="0.0" />
   <parameter name="registerDataIn" value="true" />
-  <parameter name="clockRate" value="50000000" />
-  <parameter name="componentName">$${FILENAME}_new_sdram_controller_0</parameter>
+  <parameter name="rowWidth" value="13" />
  </module>
- <module
-   kind="sdram_reader"
-   version="1.0"
-   enabled="1"
-   name="instruction_reader">
-  <parameter name="AUTO_CLOCK_CLOCK_RATE" value="50000000" />
- </module>
- <module kind="sdram_reader" version="1.0" enabled="1" name="data_reader">
-  <parameter name="AUTO_CLOCK_CLOCK_RATE" value="50000000" />
- </module>
- <module kind="sdram_writer" version="1.0" enabled="1" name="data_writer">
-  <parameter name="AUTO_CLOCK_CLOCK_RATE" value="50000000" />
- </module>
- <connection
-   kind="clock"
-   version="13.1"
-   start="clk_0.clk"
-   end="new_sdram_controller_0.clk" />
- <connection
-   kind="reset"
-   version="13.1"
-   start="clk_0.clk_reset"
-   end="new_sdram_controller_0.reset" />
- <connection
-   kind="clock"
-   version="13.1"
-   start="clk_0.clk"
-   end="instruction_reader.clock" />
- <connection
-   kind="reset"
-   version="13.1"
-   start="clk_0.clk_reset"
-   end="instruction_reader.reset" />
  <connection
    kind="avalon"
-   version="13.1"
+   version="15.1"
    start="instruction_reader.m0"
    end="new_sdram_controller_0.s1">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0000" />
   <parameter name="defaultConnection" value="false" />
  </connection>
- <connection kind="clock" version="13.1" start="clk_0.clk" end="data_reader.clock" />
- <connection
-   kind="reset"
-   version="13.1"
-   start="clk_0.clk_reset"
-   end="data_reader.reset" />
  <connection
    kind="avalon"
-   version="13.1"
+   version="15.1"
    start="data_reader.m0"
    end="new_sdram_controller_0.s1">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0000" />
   <parameter name="defaultConnection" value="false" />
  </connection>
- <connection kind="clock" version="13.1" start="clk_0.clk" end="data_writer.clock" />
- <connection
-   kind="reset"
-   version="13.1"
-   start="clk_0.clk_reset"
-   end="data_writer.reset" />
  <connection
    kind="avalon"
-   version="13.1"
+   version="15.1"
    start="data_writer.m0"
    end="new_sdram_controller_0.s1">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0000" />
   <parameter name="defaultConnection" value="false" />
  </connection>
+ <connection
+   kind="clock"
+   version="15.1"
+   start="clk_0.clk"
+   end="new_sdram_controller_0.clk" />
+ <connection
+   kind="clock"
+   version="15.1"
+   start="clk_0.clk"
+   end="instruction_reader.clock" />
+ <connection kind="clock" version="15.1" start="clk_0.clk" end="data_reader.clock" />
+ <connection kind="clock" version="15.1" start="clk_0.clk" end="data_writer.clock" />
+ <connection
+   kind="reset"
+   version="15.1"
+   start="clk_0.clk_reset"
+   end="new_sdram_controller_0.reset" />
+ <connection
+   kind="reset"
+   version="15.1"
+   start="clk_0.clk_reset"
+   end="instruction_reader.reset" />
+ <connection
+   kind="reset"
+   version="15.1"
+   start="clk_0.clk_reset"
+   end="data_reader.reset" />
+ <connection
+   kind="reset"
+   version="15.1"
+   start="clk_0.clk_reset"
+   end="data_writer.reset" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="AUTO" />
- <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
  <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="false" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
 </system>

@@ -1,10 +1,10 @@
-// megafunction wizard: %LPM_DIVIDE%
+// megafunction wizard: %LPM_DIVIDE%VBB%
 // GENERATION: STANDARD
 // VERSION: WM1.0
 // MODULE: LPM_DIVIDE 
 
 // ============================================================
-// File Name: div.v
+// File Name: udiv.v
 // Megafunction Name(s):
 // 			LPM_DIVIDE
 //
@@ -16,7 +16,6 @@
 //
 // 15.1.0 Build 185 10/21/2015 SJ Lite Edition
 // ************************************************************
-
 
 //Copyright (C) 1991-2015 Altera Corporation. All rights reserved.
 //Your use of Altera Corporation's design tools, logic functions 
@@ -33,11 +32,7 @@
 //authorized distributors.  Please refer to the applicable 
 //agreement for further details.
 
-
-// synopsys translate_off
-`timescale 1 ps / 1 ps
-// synopsys translate_on
-module div (
+module udiv (
 	denom,
 	numer,
 	quotient,
@@ -48,44 +43,22 @@ module div (
 	output	[31:0]  quotient;
 	output	[31:0]  remain;
 
-	wire [31:0] sub_wire0;
-	wire [31:0] sub_wire1;
-	wire [31:0] quotient = sub_wire0[31:0];
-	wire [31:0] remain = sub_wire1[31:0];
-
-	lpm_divide	LPM_DIVIDE_component (
-				.denom (denom),
-				.numer (numer),
-				.quotient (sub_wire0),
-				.remain (sub_wire1),
-				.aclr (1'b0),
-				.clken (1'b1),
-				.clock (1'b0));
-	defparam
-		LPM_DIVIDE_component.lpm_drepresentation = "SIGNED",
-		LPM_DIVIDE_component.lpm_hint = "LPM_REMAINDERPOSITIVE=FALSE",
-		LPM_DIVIDE_component.lpm_nrepresentation = "SIGNED",
-		LPM_DIVIDE_component.lpm_type = "LPM_DIVIDE",
-		LPM_DIVIDE_component.lpm_widthd = 32,
-		LPM_DIVIDE_component.lpm_widthn = 32;
-
-
 endmodule
 
 // ============================================================
 // CNX file retrieval info
 // ============================================================
 // Retrieval info: PRIVATE: INTENDED_DEVICE_FAMILY STRING "Cyclone IV E"
-// Retrieval info: PRIVATE: PRIVATE_LPM_REMAINDERPOSITIVE STRING "FALSE"
+// Retrieval info: PRIVATE: PRIVATE_LPM_REMAINDERPOSITIVE STRING "TRUE"
 // Retrieval info: PRIVATE: PRIVATE_MAXIMIZE_SPEED NUMERIC "-1"
 // Retrieval info: PRIVATE: SYNTH_WRAPPER_GEN_POSTFIX STRING "0"
 // Retrieval info: PRIVATE: USING_PIPELINE NUMERIC "0"
 // Retrieval info: PRIVATE: VERSION_NUMBER NUMERIC "2"
 // Retrieval info: PRIVATE: new_diagram STRING "1"
 // Retrieval info: LIBRARY: lpm lpm.lpm_components.all
-// Retrieval info: CONSTANT: LPM_DREPRESENTATION STRING "SIGNED"
-// Retrieval info: CONSTANT: LPM_HINT STRING "LPM_REMAINDERPOSITIVE=FALSE"
-// Retrieval info: CONSTANT: LPM_NREPRESENTATION STRING "SIGNED"
+// Retrieval info: CONSTANT: LPM_DREPRESENTATION STRING "UNSIGNED"
+// Retrieval info: CONSTANT: LPM_HINT STRING "LPM_REMAINDERPOSITIVE=TRUE"
+// Retrieval info: CONSTANT: LPM_NREPRESENTATION STRING "UNSIGNED"
 // Retrieval info: CONSTANT: LPM_TYPE STRING "LPM_DIVIDE"
 // Retrieval info: CONSTANT: LPM_WIDTHD NUMERIC "32"
 // Retrieval info: CONSTANT: LPM_WIDTHN NUMERIC "32"
@@ -97,10 +70,10 @@ endmodule
 // Retrieval info: CONNECT: @numer 0 0 32 0 numer 0 0 32 0
 // Retrieval info: CONNECT: quotient 0 0 32 0 @quotient 0 0 32 0
 // Retrieval info: CONNECT: remain 0 0 32 0 @remain 0 0 32 0
-// Retrieval info: GEN_FILE: TYPE_NORMAL div.v TRUE
-// Retrieval info: GEN_FILE: TYPE_NORMAL div.inc FALSE
-// Retrieval info: GEN_FILE: TYPE_NORMAL div.cmp FALSE
-// Retrieval info: GEN_FILE: TYPE_NORMAL div.bsf FALSE
-// Retrieval info: GEN_FILE: TYPE_NORMAL div_inst.v TRUE
-// Retrieval info: GEN_FILE: TYPE_NORMAL div_bb.v TRUE
+// Retrieval info: GEN_FILE: TYPE_NORMAL udiv.v TRUE
+// Retrieval info: GEN_FILE: TYPE_NORMAL udiv.inc FALSE
+// Retrieval info: GEN_FILE: TYPE_NORMAL udiv.cmp FALSE
+// Retrieval info: GEN_FILE: TYPE_NORMAL udiv.bsf FALSE
+// Retrieval info: GEN_FILE: TYPE_NORMAL udiv_inst.v TRUE
+// Retrieval info: GEN_FILE: TYPE_NORMAL udiv_bb.v TRUE
 // Retrieval info: LIB_FILE: lpm

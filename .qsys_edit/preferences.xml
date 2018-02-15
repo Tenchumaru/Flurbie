@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <preferences>
  <debug showDebugMenu="0" />
- <systemtable filter="Default">
+ <systemtable filter="All Interfaces">
   <columns>
    <connections preferredWidth="111" />
    <irq preferredWidth="34" />
@@ -14,8 +14,8 @@
    <frequency preferredWidth="163" />
   </columns>
  </clocktable>
- <window width="1100" height="800" x="0" y="0" />
- <library expandedCategories="Library,Project" />
+ <window width="1100" height="800" x="220" y="58" />
+ <library expandedCategories="Project,Library" />
  <generation block_symbol_file="0" />
  <hdlexample language="VERILOG" />
 </preferences>
