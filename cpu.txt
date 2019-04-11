@@ -118,7 +118,7 @@ ldtt:   load translation table
 ldx:    load from exception register
 
 I can implement these as SPECIAL by having CX active if bit 17 is zero and the
-above selected by by bits 1 and 0 when bit 17 is one.  This leaves room for one
+above selected by bits 1 and 0 when bit 17 is one.  This leaves room for one
 more special instruction.
 
 A Possibly Simpler Alternative
