@@ -1,4 +1,4 @@
-ram2	ram2_inst (
+ram2#(8, 32)	ram2_inst (
 	.aclr ( aclr_sig ),
 	.address_a ( address_a_sig ),
 	.address_b ( address_b_sig ),
